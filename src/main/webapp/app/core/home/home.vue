@@ -1,19 +1,17 @@
 <template>
-    <div class="home row">
-        <div class="col-md-3">
-            <span class="hipster img-fluid rounded"></span>
+    <div>
+        <div class="jumbotron masthead">
+            <div class="container">
+                <h1>Bootstrap</h1>
+                <h2>简洁、直观的静态分析工具，让代码更安全、简单。</h2>
+            </div>
         </div>
         <div class="col-md-9">
-            <h1 class="display-4" v-text="$t('home.title')">Welcome, Java Hipster!</h1>
-            <p class="lead" v-text="$t('home.subtitle')">This is your homepage</p>
+            <h3 v-if="username" v-text="$t('home.logged.message', { 'username': username})">欢迎，"{{username}}"</h3>
 
             <div>
-                <div class="alert alert-success" v-if="authenticated">
-                    <span v-if="username" v-text="$t('home.logged.message', { 'username': username})">You are logged in as user "{{username}}"</span>
-                </div>
-
                 <div class="alert alert-warning" v-if="!authenticated">
-                    <span v-text="$t('global.messages.info.authenticated.prefix')">If you want to </span>
+                    <span>如果希望使用我们的静态分析工具，您可以</span>
                     <a class="alert-link" v-on:click="openLogin()" v-text="$t('global.messages.info.authenticated.link')">sign in</a><span v-html="$t('global.messages.info.authenticated.suffix')">, you can try the default accounts:<br/>- Administrator (login="admin" and password="admin") <br/>- User (login="user" and password="user").</span>
                 </div>
                 <div class="alert alert-warning" v-if="!authenticated">
@@ -21,25 +19,41 @@
                     <router-link class="alert-link" to="/register" v-text="$t('global.messages.info.register.link')">Register a new account</router-link>
                 </div>
             </div>
-
-            <p v-text="$t('home.question')">
-                If you have any question on JHipster:
-            </p>
-
-            <ul>
-                <li><a href="https://www.jhipster.tech/" target="_blank" rel="noopener" v-text="$t('home.link.homepage')">JHipster homepage</a></li>
-                <li><a href="http://stackoverflow.com/tags/jhipster/info" target="_blank" rel="noopener" v-text="$t('home.link.stackoverflow')">JHipster on Stack Overflow</a></li>
-                <li><a href="https://github.com/jhipster/generator-jhipster/issues?state=open" target="_blank" rel="noopener" v-text="$t('home.link.bugtracker')">JHipster bug tracker</a></li>
-                <li><a href="https://gitter.im/jhipster/generator-jhipster" target="_blank" rel="noopener" v-text="$t('home.link.chat')">JHipster public chat room</a></li>
-                <li><a href="https://twitter.com/java_hipster" target="_blank" rel="noopener" v-text="$t('home.link.follow')">follow @java_hipster on Twitter</a></li>
-            </ul>
-
-            <p>
-                <span v-text="$t('home.like')">If you like JHipster, don't forget to give us a star on</span> <a href="https://github.com/jhipster/generator-jhipster" target="_blank" rel="noopener" v-text="$t('home.github')">GitHub</a>!
-            </p>
         </div>
     </div>
 </template>
 
 <script lang="ts" src="./home.component.ts">
 </script>
+
+<style>
+    @media screen and (min-width: 768px){
+        .masthead h1 {
+            font-size: 110px;
+            font-weight:bold;
+            margin-bottom: 30px;
+            color:#ffffff;
+        }
+        .masthead h2 {
+            color:#ffffff;
+            font-weight:normal;
+        }
+    .masthead {
+        padding: 0px 0 0px;
+        margin-bottom: 50px;
+        margin-top: 0px;
+        color: #fff;
+    }
+
+    .jumbotron {
+        position: relative;
+        padding: 250px 250px;
+        color: #fff;
+        text-align: center;
+        text-shadow: 0 1px 3px rgba(0,0,0,.4), 0 0 30px rgba(0,0,0,.075);
+        background: #020031;
+        background: linear-gradient(45deg,#43d8c9,#035aa6);
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#020031",endColorstr="#6d3353",GradientType=1);
+        box-shadow: inset 0 3px 7px rgba(255,255,255,.75), inset 0 -3px 7px rgba(255,255,255,.2);
+    }}
+</style>
