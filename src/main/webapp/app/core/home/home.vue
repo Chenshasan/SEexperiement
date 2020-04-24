@@ -2,12 +2,15 @@
     <div>
         <div class="jumbotron masthead">
             <div class="container">
-                <h1>Bootstrap</h1>
+                <h1>XAnalysis</h1>
                 <h2>简洁、直观的静态分析工具，让代码更安全、简单。</h2>
+                <h5>当前版本： v1.0.0 | 文档更新于：2020-04-25</h5>
+                <hr>
+                <a class="btn btn-outline-inverse btn-lg" onclick="_hmt.push(['_trackEvent', '首页巨幕', 'click', '路飞btn'])" target="_blank">点击开始进入静态分析之旅</a>
             </div>
         </div>
         <div class="col-md-9">
-            <h3 v-if="username" v-text="$t('home.logged.message', { 'username': username})">欢迎，"{{username}}"</h3>
+            <h5 v-if="username" v-text="$t('home.logged.message', { 'username': username})">欢迎，"{{username}}"</h5>
 
             <div>
                 <div class="alert alert-warning" v-if="!authenticated">
@@ -34,9 +37,13 @@
             margin-bottom: 30px;
             color:#ffffff;
         }
+        .btn{
+            color: #ffffff;
+        }
         .masthead h2 {
             color:#ffffff;
             font-weight:normal;
+            margin-bottom:30px;
         }
     .masthead {
         padding: 0px 0 0px;
@@ -47,7 +54,7 @@
 
     .jumbotron {
         position: relative;
-        padding: 250px 250px;
+        padding: 200px 200px;
         color: #fff;
         text-align: center;
         text-shadow: 0 1px 3px rgba(0,0,0,.4), 0 0 30px rgba(0,0,0,.075);
