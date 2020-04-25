@@ -30,13 +30,12 @@ export default{
     name: "Upload",
     data() {
     return {
-      
       panelShow: false, //选择文件后，展示上传panel
       collapse: false,
       files: [],
       uploadOptions1: {
         target: "//localhost:8080/upload/single",//上传的接口
-        testChunks: false, //是否开启服务器分片校验
+        testChunks: false, //是否开启服务器分验
         fileParameterName: "file",//默认的文件参数名
         headers: {},
         query() {},

@@ -26,7 +26,7 @@ import java.util.Map;
 @CrossOrigin
 public class UploadController {
 
-    private final static String CHUNK_FOLDER = "/Users/yangwei/resource/data/chunk";
+    //private final static String CHUNK_FOLDER = "/Users/yangwei/resource/data/chunk";
     private final static String SINGLE_FOLDER = "E:\\work\\resource";
 
     @Autowired
@@ -59,7 +59,7 @@ public class UploadController {
                 if (!Files.isWritable(Paths.get(SINGLE_FOLDER))) {
                     Files.createDirectories(Paths.get(SINGLE_FOLDER));
                 }
-                Path path = Paths.get(SINGLE_FOLDER,temp.getName());
+                Path path = Paths.get(SINGLE_FOLDER,temp.getOriginalFilename());
                 Files.write(path, bytes);
             } catch (IOException e) {
                 e.printStackTrace();
