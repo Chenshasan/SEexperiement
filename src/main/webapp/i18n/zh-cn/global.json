@@ -135,5 +135,5 @@
       "not.image": "File was expected to be an image but was found to be \"{{ fileType }}\""
     }
   },
-  "footer": "这里是页脚"
+  "footer": ""
 }

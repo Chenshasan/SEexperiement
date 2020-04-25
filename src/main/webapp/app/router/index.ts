@@ -25,6 +25,8 @@ const JhiHealthComponent = () => import('../admin/health/health.vue');
 const JhiLogsComponent = () => import('../admin/logs/logs.vue');
 const JhiAuditsComponent = () => import('../admin/audits/audits.vue');
 const JhiMetricsComponent = () => import('../admin/metrics/metrics.vue');
+const UploadComponent = () => import('../core/home/upload.vue');
+
 /* tslint:disable */
 // jhipster-needle-add-entity-to-router-import - JHipster will import entities to the router here
 
@@ -43,6 +45,11 @@ export default new Router({
       path: '/result',
       name: 'Result',
       component:Result
+    },
+    {
+      path: '/upload',
+      name: 'UploadComponent',
+      component: UploadComponent,
     },
     {
       path: '/forbidden',
@@ -147,7 +154,7 @@ export default new Router({
       name: 'JhiConfigurationComponent',
       component: JhiConfigurationComponent,
       meta: { authorities: [Authority.ADMIN] }
-    }
+    },
     // jhipster-needle-add-entity-to-router - JHipster will add entities to the router here
   ]
 });

@@ -3,6 +3,7 @@
 import Vue from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import App from './app.vue';
+import uploader from 'vue-simple-uploader';
 import Vue2Filters from 'vue2-filters';
 import router from './router';
 import * as config from './shared/config/config';
@@ -37,6 +38,7 @@ config.initVueApp(Vue);
 config.initFortAwesome(Vue);
 bootstrapVueConfig.initBootstrapVue(Vue);
 Vue.use(Vue2Filters);
+Vue.use(uploader);
 Vue.component('font-awesome-icon', FontAwesomeIcon);
 Vue.component('jhi-item-count', JhiItemCountComponent);
 Vue.component('jhi-sort-indicator', JhiSortIndicatorComponent);
