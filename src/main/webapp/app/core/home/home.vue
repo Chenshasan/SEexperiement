@@ -6,7 +6,7 @@
                 <h2>简洁、直观的静态分析工具，让代码更安全、简单。</h2>
                 <h5>当前版本： v1.0.0 | 文档更新于：2020-04-25</h5>
                 <hr>
-                <a class="btn btn-outline-inverse btn-lg" onclick="_hmt.push(['_trackEvent', '首页巨幕', 'click', '路飞btn'])" target="_blank">点击开始进入静态分析之旅</a>
+                <router-link class="btn btn-lg" to="/result">点击传输文件开始进入静态分析之旅</router-link>
             </div>
         </div>
         <div class="col-md-9">

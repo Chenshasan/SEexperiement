@@ -1,5 +1,5 @@
 <template>
-    <div class="ribbon" v-if="ribbonEnabled"><a href="" v-text="$t('global.ribbon.' + ribbonEnv)">{{ribbonEnv}}</a></div>
+    <div class="ribbon" v-if="ribbonEnabled"></div>
 </template>
 
 <script lang="ts" src="./ribbon.component.ts">
@@ -11,7 +11,7 @@
 Developement Ribbon
 ========================================================================== */
     .ribbon {
-        background-color: rgba(170, 0, 0, 0.5);
+        background-color: rgba(170, 0, 0, 0);
         left: -3.5em;
         moz-transform: rotate(-45deg);
         ms-transform: rotate(-45deg);
