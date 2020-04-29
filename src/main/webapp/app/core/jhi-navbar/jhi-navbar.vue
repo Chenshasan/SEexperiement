@@ -1,5 +1,6 @@
 <template>
-    <b-navbar toggleable="md" type="dark" class="jh-navbar">
+    <div>
+    <b-navbar toggleable="md" type="dark" class="jh-navbar fixed-top">
         <div class="jh-logo-container float-left">
             <b-navbar-toggle right class="jh-navbar-toggler d-lg-none float-right" href="javascript:void(0);"  data-toggle="collapse" target="header-tabs" aria-expanded="false" aria-label="Toggle navigation">
                 <font-awesome-icon icon="bars" />
@@ -113,6 +114,7 @@
             </b-navbar-nav>
         </b-collapse>
     </b-navbar>
+    </div>
 </template>
 
 <script lang="ts" src="./jhi-navbar.component.ts">
@@ -125,12 +127,13 @@
     ========================================================================== */
 .navbar-version {
   font-size: 10px;
-  color: #ccc;
+  color: #616161;
 }
 
 .jh-navbar {
-  background-color: #353d47;
-  padding: 0.2em 1em;
+    background-color: #ffffff;
+    padding: 0.2em 1em;
+    box-shadow: 0 3px 7px rgba(0,0,0,.55);
 }
 
 .jh-navbar .profile-image {
@@ -143,7 +146,7 @@
 .jh-navbar .dropdown-item.active,
 .jh-navbar .dropdown-item.active:focus,
 .jh-navbar .dropdown-item.active:hover {
-  background-color: #353d47;
+  background-color: #696969;
 }
 
 .jh-navbar .dropdown-toggle::after {
@@ -163,13 +166,17 @@
 }
 
 .jh-navbar .jh-navbar-toggler {
-  color: #ccc;
+  color: #696969;
   font-size: 1.5em;
   padding: 10px;
 }
 
 .jh-navbar .jh-navbar-toggler:hover {
-  color: #fff;
+  color: #696969;
+}
+
+span{
+    color: #696969;
 }
 
 @media screen and (min-width: 768px) {
@@ -193,14 +200,14 @@
 .navbar-title {
   display: inline-block;
   vertical-align: middle;
-  color: white;
+  color: #696969;
 }
 /* waiting for bootstrap fix bug on nav-item-dropdown a:active
 https://github.com/bootstrap-vue/bootstrap-vue/issues/2219
 */
 nav li.router-link-active .navbar-dropdown-menu {
   cursor: pointer;
-  color: #fff;
+  color: #696969;
 }
 
 /* ==========================================================================
