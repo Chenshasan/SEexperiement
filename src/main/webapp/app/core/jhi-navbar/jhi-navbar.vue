@@ -132,7 +132,7 @@
 
 .jh-navbar {
     background-color: #ffffff;
-    padding: 0.2em 1em;
+    padding: 3em 2em;
     box-shadow: 0 3px 7px rgba(0,0,0,.55);
 }
 

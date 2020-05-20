@@ -165,6 +165,35 @@ public:
     return true;
   }
 
+  bool VisitArraySubscriptExpr(ArraySubscriptExpr* stmt)
+  {
+      Expr *lhs = stmt->getBase()->IgnoreImpCasts();
+      Expr *rhs = stmt->getIdx()->IgnoreImpCasts();
+      QualType ltype = lhs->getType();
+      QualType rtype = rhs->getType();
+      Type* lTypePtr = ltype.getTypePtr();
+      Type* rTypePtr = rtype.getTypePtr();
+      if (lTypePtr->isConstantArrayType())
+      {
+          ConstantArrayType* arr = (ConstantArrayType* )ltype->getAsOpaquePtr();
+          int length1 = arr.getSize();
+      }
+      MyASTConsumer TheConsumer(TheRewriter);
+      ASTContext &context = TheCompInst.getASTContext();
+      int &length2 = 0;
+      rhs->isIntegerConstantExpr(x, context);
+      if (isa<CaseStmt>(stmt))
+      {
+          CaseStmt* cs = cast<CaseStmt>(stmt);
+          if (length1 < =length2) {
+              SourceLocation beginLoc = cs->getBeginLoc();
+              string locString = beginLoc.printToString(*SM);
+              cout << "Warning: array may out of range::" << locString.c_str() << endl;
+          }
+      }
+      return true;
+  }
+
 private:
   Rewriter &TheRewriter;
 };
