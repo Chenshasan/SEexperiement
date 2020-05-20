@@ -1,13 +1,12 @@
 <template>
-    <div>
+    <div >
         <div class="jumbotron masthead">
             <div class="container">
                 <h1>XAnalysis</h1>
                 <h2>简洁、直观的静态分析工具，让代码更安全、简单。</h2>
                 <h5>当前版本： v1.0.0 | 文档更新于：2020-04-25</h5>
                 <hr>
-
-                <router-link class="btn btn-lg" to="/result">点击传输文件开始进入静态分析之旅</router-link>
+                <router-link class="btn btn-lg" to="/upload">点击开始进入静态分析之旅</router-link>
             </div>
         </div>
         <div class="col-md-9">
@@ -64,5 +63,6 @@
         background: linear-gradient(45deg,#43d8c9,#035aa6);
         filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#020031",endColorstr="#6d3353",GradientType=1);
         box-shadow: inset 0 3px 7px rgba(255,255,255,.75), inset 0 -3px 7px rgba(255,255,255,.2);
-    }}
+    }
+    }
 </style>
