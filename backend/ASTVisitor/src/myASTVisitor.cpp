@@ -216,11 +216,44 @@ public:
   }
   bool VisitArraySubscriptExpr(ArraySubscriptExpr* ase)
   {
-    std::cout<<"inarr\n";
+    SourceLocation beginLoc = ase->getBeginLoc();
+    string beginLocString = beginLoc.printToString(*SM);
+    //std::cout<<"inarr\n";
     Expr *lhs = ase->getBase()->IgnoreImpCasts();
-    Expr *rhs = ase->getIdx();
-    //lhs->dumpColor();
-    //rhs->dumpColor();
+    Expr *rhs = ase->getIdx()->IgnoreImpCasts();
+    int arrMaxSize=-1;
+    string arrName;
+    if(isa<DeclRefExpr>(lhs))
+    {
+      DeclRefExpr* ldre=cast<DeclRefExpr>(lhs);
+      arrName=ldre->getNameInfo().getAsString();
+      QualType qt=ldre->getType();
+      std::string qas=qt.getAsString();
+      //cout<<qt.getAsString()<<'\n';
+      //TODO only 1-d
+      int lbrack,rbrack;
+      lbrack=qas.find_first_of('[');
+      rbrack=qas.find_first_of(']');
+      //arrMaxSize=
+      //std::cout<<qas.substr(lbrack+1,rbrack-lbrack-1)<<endl;
+      arrMaxSize=std::stoi(qas.substr(lbrack+1,rbrack-lbrack-1));
+      //std::cout<<"AMS"<<arrMaxSize<<endl;
+    }
+    if(isa<IntegerLiteral>(rhs))
+    {
+      IntegerLiteral* il=cast<IntegerLiteral>(rhs);
+      uint64_t indexSize=il->getValue().getLimitedValue();
+      //std::cout<<"IDS "<<indexsize<<endl;
+      if(arrMaxSize==-1) return true;
+      if(arrMaxSize<=indexSize)
+      {
+        cout<<"Warning: Array out-of-bound access :";
+        cout<<arrName;
+        cout<<":Try to access index "<<indexSize;
+        cout<<" while the max size is:"<<arrMaxSize;
+        cout<<":"<<beginLocString<<endl;
+      }
+    }
     return true;
   }
   bool VisitUnaryOperator(UnaryOperator* u)
