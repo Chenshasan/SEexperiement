@@ -27,14 +27,15 @@
 #include "clang/Rewrite/Frontend/Rewriters.h"
 #include "llvm/Support/Host.h"
 #include "llvm/Support/raw_ostream.h"
-#include "clang-c/Index.h"
+
+#define WARNING_TRIGGER_VARIABLE_SIZE (1*1024*1024*8)
 
 using namespace clang;
 using namespace std;
 
+double bitToMb(double bits);
+
 SourceManager *SM;
-ASTContext *CTX;
-int ForStmtEndLine = 0;
 
 // By implementing RecursiveASTVisitor, we can specify which AST nodes
 // we're interested in by overriding relevant methods.
@@ -45,97 +46,52 @@ public:
 
   bool VisitStmt(Stmt *s)
   {
+    // Only care about For statements.
     if (isa<ForStmt>(s))
     {
       ForStmt *ForStatement = cast<ForStmt>(s);
       SourceLocation beginLoc = ForStatement->getBeginLoc();
-      string beginLocString = beginLoc.printToString(*SM);
-      Stmt *body = ForStatement->getBody();
-      SourceLocation endLoc = ForStatement->getEndLoc();
-      string endLocString = endLoc.printToString(*SM);
-      char delims[] = ":";
-      char *tmp = NULL;
-      tmp = strtok((char *)endLocString.c_str(), delims);
-      tmp = strtok(NULL, delims);
-      ForStmtEndLine = atoi(tmp);
-      Stmt::child_range range = body->children();
-      for (Stmt::child_iterator r = range.begin(); r != range.end(); r++)
-      {
-        VisitStmt(*r);
-      }
+      string locString = beginLoc.printToString(*SM);
+      printf("for loop detected::%s\n", locString.c_str());
     }
     else if (isa<DeclStmt>(s))
     {
-      DeclStmt* ds=cast<DeclStmt>(s);
+      DeclStmt* ds = cast<DeclStmt>(s);
       SourceLocation beginLoc = ds->getBeginLoc();
-      //Decl* dcl=ds->getDeclGroup().getSingleDecl();   //will hit assertion when ds->getDeclGroup() is not SingleDecl
-      Decl* dcl=NULL;
-      if(ds->getDeclGroup().isSingleDecl())
-      {
-        dcl=ds->getDeclGroup().getSingleDecl();
-      }
-      else
-      {
-        dcl=*(ds->getDeclGroup().begin());
-      }
-
+      Decl* dcl=ds->getDeclGroup().getSingleDecl();
       if(isa<VarDecl>(dcl))
       {
-        VarDecl* vd=cast<VarDecl>(dcl);
-        QualType qt=vd->getType();
-        std::string qtgas=qt.getAsString();
-        if(qtgas.find('*')!=qtgas.npos)
-        {
+        VarDecl* vd = cast<VarDecl>(dcl);
+        QualType qt = vd->getType();
+        uint64_t tsize = vd->getASTContext().getTypeSize(vd->getType());
+        if (tsize >=  WARNING_TRIGGER_VARIABLE_SIZE) {
+          string qtstr = qt.getAsString();
           string locString = beginLoc.printToString(*SM);
-          printf("pointer decl detected::%s\n", locString.c_str());
+          cout << "Warning: variable is too big::" << locString.c_str() << ": " << qtstr << ": " << bitToMb(tsize) << "Mb" << endl;
         }
       }
     }
     return true;
   }
 
-  bool VisitBinaryOperator(BinaryOperator *stmt)
+  bool VisitSwitchStmt(SwitchStmt* s)
   {
-    SourceLocation beginLoc = stmt->getBeginLoc();
-    string beginLocString = beginLoc.printToString(*SM);
-    char delims[] = ":";
-    char *tmp = NULL;
-    tmp = strtok((char *)beginLocString.c_str(), delims);
-    tmp = strtok(NULL, delims);
-    int BinaryOperatorLine = atoi(tmp);
-    if(BinaryOperatorLine > ForStmtEndLine)
+    QualType condType = s->getCond()->getType();
+    for (SwitchCase* sc = s->getSwitchCaseList(); sc; sc = sc->getNextSwitchCase())
     {
-      return false;
-    }
-
-    PresumedLoc PLoc = (*SM).getPresumedLoc(beginLoc);
-    const char * fname = PLoc.getFilename();
-    int line = PLoc.getLine();
-    int col = PLoc.getColumn();
-    Expr *lhs = stmt->getLHS()->IgnoreImpCasts();
-    Expr *rhs = stmt->getRHS()->IgnoreImpCasts();
-    QualType ltype = lhs->getType();
-    QualType rtype = rhs->getType();
-    if (ltype->isPointerType())
-    {
-      ltype = ltype->getPointeeType();
-    }
-    if (rtype->isPointerType())
-    {
-      rtype = rtype->getPointeeType();
-    }
-    CharUnits lcu = CTX->getTypeSizeInChars(ltype);
-    int lsize = lcu.getQuantity();
-    CharUnits rcu = CTX->getTypeSizeInChars(rtype);
-    int rsize = rcu.getQuantity();
-
-    if ( lsize<=2 )
-    {
-      printf("SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col,ltype.getAsString().c_str(),lsize);
-    }
-    else if ( rsize<=2 )
-    {
-      printf("SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col,rtype.getAsString().c_str(),rsize);
+      if (isa<CaseStmt>(sc))
+      {
+        CaseStmt* cs = cast<CaseStmt>(sc);
+        // if (isa<ConstantExpr>(cs->getLHS()))
+        // {
+        //   ConstantExpr* ce = cast<ConstantExpr>(cs->getLHS());
+        // }
+        if (cs->getLHS()->getType() != condType) {
+          SourceLocation beginLoc = cs->getBeginLoc();
+          string locString = beginLoc.printToString(*SM);
+          cout << "Warning: switch case type mismatches cond type::" << locString.c_str() << endl;
+        }
+      }
     }
     return true;
   }
@@ -203,9 +159,6 @@ int main(int argc, char *argv[])
 
   MyASTConsumer TheConsumer(TheRewriter);
 
-  ASTContext &context = TheCompInst.getASTContext();
-  CTX = &context;
-  
   // Parse the file to AST, registering our consumer as the AST consumer.
   ParseAST(TheCompInst.getPreprocessor(), &TheConsumer,
            TheCompInst.getASTContext());
@@ -215,4 +168,8 @@ int main(int argc, char *argv[])
   // llvm::outs() << std::string(RewriteBuf->begin(), RewriteBuf->end());
 
   return 0;
+}
+
+double bitToMb(double bits) {
+  return bits / 8 / 1024 / 1024;
 }
