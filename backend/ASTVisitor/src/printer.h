@@ -1,9 +1,9 @@
 #pragma once
 #include <fstream>
-class printer
+class Printer
 {
 public:
-    printer()
+    Printer()
     {
 
     }
