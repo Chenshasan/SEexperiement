@@ -1,5 +1,5 @@
-#include <stdio.h>
-#include <string.h>
+//#include <stdio.h>
+//#include <string.h>
 
 int inc(int a)
 {
@@ -27,11 +27,13 @@ int main()
     }
     if(a>1)
     {
-        printf("maior\n");
+        //printf("maior\n");
     }
     else
     {
-        printf("menor\n");
+        //printf("menor\n");
     }
+
+
     return 0;
 }

@@ -3,7 +3,7 @@
 #include "printer.h"
 #include "unionFind.h"
 const int UF_CAPACITY=100;
-class PointerChecker:public printer
+class PointerChecker:public Printer
 {
 public:
     PointerChecker():UF(UF_CAPACITY)
