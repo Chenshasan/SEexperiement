@@ -1,8 +1,14 @@
 #include "pointerChecker.h"
+
 int PointerChecker::nullDerefCheck(Pointer p2deref)
 {
     if(pMap[p2deref.getid()]->getState()!=isVALID)
+    {
         std::cout<<"Warning: Deref a null or uninitialized pointer : "<<p2deref.getName();
+        pprint("Warning: Deref a null or uninitialized pointer : ");
+        pprint(p2deref.getName());
+        return -1;
+    }
     return 1;
 }
 int PointerChecker::freeCheck(Pointer p2free)
@@ -11,10 +17,15 @@ int PointerChecker::freeCheck(Pointer p2free)
     else if(p2free.getNew() && p2free.getState()==isFREED)
     {
         std::cout<<"Warning: Double free detected : "<<p2free.getName();
+        pprint("Warning: Double free detected : ");
         return -1;
     }
     else
+    {
         std::cout<<"Warning: Try to free a null ,uninit or a pointer that is not defined by new operator : "<<p2free.getName();
+        pprint("Warning: Try to free a null ,uninit or a pointer that is not defined by new operator : ");
+    }
+    pprint(p2free.getName());
     return -1;
 }
 /*

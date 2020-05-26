@@ -1,0 +1,2 @@
+Warning: Deref a null or uninitialized pointer : p1 ::Tnullderef2.cpp:10:11
+Warning: Deref a null or uninitialized pointer : p2 ::Tnullderef2.cpp:11:11

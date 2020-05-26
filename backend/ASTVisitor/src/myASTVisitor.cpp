@@ -42,6 +42,7 @@ SourceManager *SM;
 ASTContext *CTX;
 int ForStmtEndLine = 0;
 int Pointer::numsOfPointer;
+std::ofstream printer::of;
 
 // By implementing RecursiveASTVisitor, we can specify which AST nodes
 // we're interested in by overriding relevant methods.
@@ -97,7 +98,10 @@ public:
         if (tsize >=  WARNING_TRIGGER_VARIABLE_SIZE) {
           string qtstr = qt.getAsString();
           string locString = beginLoc.printToString(*SM);
+          stringstream ssr;
           cout << "Warning: variable is too big::" << locString.c_str() << ": " << qtstr << ": " << bitToMb(tsize) << "Mb" << endl;
+          ssr << "Warning: variable is too big::" << locString.c_str() << ": " << qtstr << ": " << bitToMb(tsize) << "Mb" << endl;
+          pc.pprint(ssr.str());
         }
         if(qt->isPointerType())
         {
@@ -207,10 +211,18 @@ public:
     if ( lsize<=2 )
     {
       printf("SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col,ltype.getAsString().c_str(),lsize);
+      char tmpwarn[100];
+      sprintf(tmpwarn,"SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col,ltype.getAsString().c_str(),lsize);
+      std::string tmpwarns(tmpwarn);
+      pc.pprint(tmpwarns);
     }
     else if ( rsize<=2 )
     {
       printf("SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col,rtype.getAsString().c_str(),rsize);
+      char tmpwarn[100];
+      sprintf(tmpwarn,"SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col,rtype.getAsString().c_str(),rsize);
+      std::string tmpwarns(tmpwarn);
+      pc.pprint(tmpwarns);
     }
     return true;
   }
@@ -247,11 +259,19 @@ public:
       if(arrMaxSize==-1) return true;
       if(arrMaxSize<=indexSize)
       {
+        stringstream ssr;
         cout<<"Warning: Array out-of-bound access :";
         cout<<arrName;
         cout<<":Try to access index "<<indexSize;
         cout<<" while the max size is:"<<arrMaxSize;
         cout<<":"<<beginLocString<<endl;
+
+        ssr<<"Warning: Array out-of-bound access :";
+        ssr<<arrName;
+        ssr<<":Try to access index "<<indexSize;
+        ssr<<" while the max size is:"<<arrMaxSize;
+        ssr<<":"<<beginLocString<<endl;
+        pc.pprint(ssr.str());
       }
     }
     return true;
@@ -268,8 +288,13 @@ public:
       if(opstr.find('*')!=opstr.npos)
       {
         std::string pname=dre->getNameInfo().getAsString();
-        pc.nullDerefCheck(*(pc.getPointerByName(pname)));
-        std::cout<<" ::"<<beginLocString<<'\n';
+        if(pc.nullDerefCheck(*(pc.getPointerByName(pname)))<0)
+        {
+          std::cout<<" ::"<<beginLocString<<'\n';
+          stringstream ssr;
+          ssr<<" ::"<<beginLocString<<'\n';
+          pc.pprint(ssr.str());
+        }
       }
     }
     //std::cout<<u->getOpcodeStr(u->getOpcode()).str()<<'\n';
@@ -289,6 +314,9 @@ public:
     if(!success)
     {
       std::cout<<" ::"<<beginLocString<<'\n';
+      stringstream ssr;
+      ssr<<" ::"<<beginLocString<<'\n';
+      pc.pprint(ssr.str());
     }
     return true;
   }
@@ -304,6 +332,9 @@ public:
           SourceLocation beginLoc = cs->getBeginLoc();
           string locString = beginLoc.printToString(*SM);
           cout << "Warning: switch case type mismatches cond type::" << locString.c_str() << endl;
+          stringstream ssr;
+          ssr<< "Warning: switch case type mismatches cond type::" << locString.c_str() << endl;
+          pc.pprint(ssr.str());
         }
       }
     }
