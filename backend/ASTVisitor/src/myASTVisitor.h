@@ -4,3 +4,4 @@
 using namespace clang;
 
 extern SourceManager *SM;
+extern ASTContext *CTX;

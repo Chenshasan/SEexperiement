@@ -19,20 +19,40 @@ SwitchChecker::SwitchChecker()
 void SwitchChecker::typeMismatchCheck(SwitchStmt* ss)
 {
   QualType condType = ss->getCond()->getType();
-  for (SwitchCase* sc = ss->getSwitchCaseList(); sc; sc = sc->getNextSwitchCase())
+  vector<SwitchCase*> sces = getCaseByOrder(ss);
+  for (const auto& sc : sces)
   {
-    if (isa<CaseStmt>(sc))
+    CaseStmt* cs = cast<CaseStmt>(sc);
+    QualType caseType = cs->getLHS()->IgnoreImpCasts()->getType();
+    if (!isCastAccepted(caseType, condType))
     {
-      CaseStmt* cs = cast<CaseStmt>(sc);
-      if (cs->getLHS()->IgnoreImpCasts()->getType() != condType)
-      {
-        SourceLocation beginLoc = cs->getBeginLoc();
-        string locString = beginLoc.printToString(*SM);
-        cout << "Warning: switch case type mismatches cond type::" << locString.c_str() << endl;
-        stringstream ssr;
-        ssr << "Warning: switch case type mismatches cond type::" << locString.c_str() << endl;
-        pprint(ssr.str());
-      }
+      SourceLocation beginLoc = cs->getBeginLoc();
+      string locString = beginLoc.printToString(*SM);
+      cout << locString.c_str() << ':' << ' ' <<
+        "warning: there is a mismatch between case type and cond type" << endl;
+      stringstream ssr;
+      ssr << locString.c_str() << ':' << ' ' <<
+        "warning: there is a mismatch between case type and cond type" << endl;
+      pprint(ssr.str());
     }
   }
+}
+
+vector<SwitchCase*> SwitchChecker::getCaseByOrder(SwitchStmt* ss)
+{
+  vector<SwitchCase*> ordered_sc;
+  for (SwitchCase* sc = ss->getSwitchCaseList(); sc; sc = sc->getNextSwitchCase())
+  {
+    if (isa<CaseStmt>(sc)) {
+      ordered_sc.insert(ordered_sc.begin(), sc);
+    }
+  }
+  return ordered_sc;
+}
+
+bool SwitchChecker::isCastAccepted(QualType caseType, QualType condType)
+{
+  uint64_t caseSize = CTX->getTypeSize(caseType);
+  uint64_t condSize = CTX->getTypeSize(condType);
+  return caseSize <= condSize;
 }
