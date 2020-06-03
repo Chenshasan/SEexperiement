@@ -21,9 +21,17 @@ void BigVariableChecker::bigVariableCheck(VarDecl* vd)
   if (tsize >=  WARNING_TRIGGER_VARIABLE_SIZE) {
     string qtstr = qt.getAsString();
     string locString = beginLoc.printToString(*SM);
+    cout << locString.c_str() << ':' << ' ' <<
+      "warning: variable" << ' ' <<
+      '\'' << qtstr << '\'' << ' ' <<
+      '(' << bitToMb(tsize) << "Mb" << ')' << ' ' <<
+      "is too big" << endl;
     stringstream ssr;
-    cout << "Warning: variable is too big::" << locString.c_str() << ": " << qtstr << ": " << bitToMb(tsize) << "Mb" << endl;
-    ssr << "Warning: variable is too big::" << locString.c_str() << ": " << qtstr << ": " << bitToMb(tsize) << "Mb" << endl;
+    ssr << locString.c_str() << ':' << ' ' <<
+      "warning: variable" << ' ' <<
+      '\'' << qtstr << '\'' << ' ' <<
+      '(' << bitToMb(tsize) << "Mb" << ')' << ' ' <<
+      "is too big" << endl;
     pprint(ssr.str());
   }
 }
