@@ -29,7 +29,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include "clang-c/Index.h"
 
-#include "pointerChecker.h"
+#include "./pointerChecker/pointerChecker.h"
 
 #define WARNING_TRIGGER_VARIABLE_SIZE (1*1024*1024*8)
 
