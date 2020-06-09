@@ -73,6 +73,7 @@ public:
     }
 private:
     std::string _name;
+    std::string _infuncname;
     bool _isnewed;
     int _state;
     int _id;

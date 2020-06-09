@@ -1,12 +1,3 @@
-//------------------------------------------------------------------------------
-// Clang rewriter sample. Demonstrates:
-//
-// * How to use RecursiveASTVisitor to find interesting AST nodes.
-// * How to use the Rewriter API to rewrite the source code.
-//
-// Eli Bendersky (eliben@gmail.com)
-// This code is in the public domain
-//------------------------------------------------------------------------------
 #include <cstdio>
 #include <memory>
 #include <sstream>
@@ -30,7 +21,7 @@
 #include "clang-c/Index.h"
 
 #include "./pointerChecker/pointerChecker.h"
-
+#include "./functionChecker/functionChecker.h"
 #define WARNING_TRIGGER_VARIABLE_SIZE (1*1024*1024*8)
 
 using namespace clang;
@@ -42,6 +33,7 @@ SourceManager *SM;
 ASTContext *CTX;
 int ForStmtEndLine = 0;
 int Pointer::numsOfPointer;
+std::string curFuncName;
 std::ofstream printer::of;
 
 // By implementing RecursiveASTVisitor, we can specify which AST nodes
@@ -50,6 +42,64 @@ class MyASTVisitor : public RecursiveASTVisitor<MyASTVisitor>
 {
 public:
   MyASTVisitor(Rewriter &R) : TheRewriter(R) {}
+  //functions
+  bool VisitFunctionDecl(FunctionDecl* fd)
+  {
+    //cout<<fd->getNameAsString();
+    curFuncName=fd->getNameAsString();
+    if(fd->isImplicit() || curFuncName=="main")
+      return true;
+      //cout<<"IMPL FUNC"<<endl;
+    else
+      //cout<<"EXPT FUNC"<<endl;
+    {
+      int paramnum=fd->getNumParams();
+      vector<std::string> pointerParmNames;
+      for(int i=0;i<paramnum;++i)
+      {
+        ParmVarDecl* pvdth=fd->getParamDecl(i);
+        std::string typestr=pvdth->getType().getAsString();
+        if(typestr.find('*')!=typestr.npos) pointerParmNames.push_back(pvdth->getNameAsString());
+      }
+      if(pointerParmNames.size()==0) return true;
+      astFunc* af=new astFunc(curFuncName,pointerParmNames.size());
+      for(int i=0;i<pointerParmNames.size();++i) af->setIndByName(pointerParmNames.at(i),i);
+      fc.setFunc(af);
+
+      return true;
+    }
+    // if(curFuncName!="main")
+    // {
+    //   ParmVarDecl* pvd=fd->getParamDecl(0);
+    //   //cout<<endl;
+    //   pvd->getType().dump();
+    //   if(pvd)
+    //     cout<< pvd->getNameAsString()<<endl;
+    // }
+    // return true;
+  }
+  bool VisitCallExpr(CallExpr* ce)
+  {
+    //cout<<"BVVCE"<<endl;
+    int argnum=ce->getNumArgs();
+    Expr** parums=ce->getArgs();
+    if(isa<DeclRefExpr>(ce->getCallee()->IgnoreImpCasts()))
+    {
+      DeclRefExpr* dre=cast<DeclRefExpr>(ce->getCallee()->IgnoreImpCasts());
+      //dre->dumpColor();
+      astFunc* af=fc.getFuncByName(dre->getDecl()->getNameAsString());
+      if(af==nullptr) return true;
+      vector<Pointer*> ptrparams;
+      for(int i=0;i<argnum;++i)
+      {
+        DeclRefExpr* pdre=cast<DeclRefExpr>(parums[i]->IgnoreImpCasts());
+        std::string thisPtrName=pdre->getDecl()->getNameAsString();
+        ptrparams.push_back(pc.getPointerByName(thisPtrName));
+      }
+      fc.func2DerefCheck(dre->getDecl()->getNameAsString(),ptrparams);
+    }
+    return true;
+  }
 
   bool VisitStmt(Stmt *s)
   {
@@ -303,6 +353,7 @@ public:
   bool VisitCXXDeleteExpr(CXXDeleteExpr* cde)
   {
     //std::cout<<"CXXDEL"<<'\n';
+    if(curFuncName!="main") return true;
     SourceLocation beginLoc = cde->getBeginLoc();
     string beginLocString = beginLoc.printToString(*SM);
     DeclRefExpr* dre=cast<DeclRefExpr>(cde->getArgument()->IgnoreImpCasts());
@@ -344,6 +395,7 @@ public:
 private:
   Rewriter &TheRewriter;
   PointerChecker pc;
+  FunctionChecker fc;
 };
 
 class MyASTConsumer : public ASTConsumer
