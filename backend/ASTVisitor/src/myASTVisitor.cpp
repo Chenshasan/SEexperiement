@@ -28,11 +28,6 @@ public:
     smchecker.FindExprNameByToken(e);
     return true;
   }
-  bool VisitCallExpr(CallExpr *c)
-  {
-    //smchecker.printCallExprName(c);
-    return true;
-  }
   bool VisitWhileStmt(WhileStmt *ws)
   {
     WhileStmtEndLine = smchecker.findWhileStmtEndLine(ws);
