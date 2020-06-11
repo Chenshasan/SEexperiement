@@ -1,3 +1,4 @@
+#pragma once
 #include "clang/AST/Stmt.h"
 
 #include "printer.h"

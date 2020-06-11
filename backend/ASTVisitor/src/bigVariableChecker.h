@@ -1,3 +1,4 @@
+#pragma once
 #include "clang/AST/Decl.h"
 
 #include "printer.h"

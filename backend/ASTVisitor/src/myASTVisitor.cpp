@@ -7,38 +7,12 @@
 // Eli Bendersky (eliben@gmail.com)
 // This code is in the public domain
 //------------------------------------------------------------------------------
-#include <cstdio>
-#include <memory>
-#include <sstream>
-#include <string>
-#include <iostream>
-
-#include "clang/AST/ASTConsumer.h"
-#include "clang/AST/RecursiveASTVisitor.h"
-#include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/FileManager.h"
-#include "clang/Basic/SourceManager.h"
-#include "clang/Basic/TargetInfo.h"
-#include "clang/Basic/TargetOptions.h"
-#include "clang/Frontend/CompilerInstance.h"
-#include "clang/Lex/Preprocessor.h"
-#include "clang/Parse/ParseAST.h"
-#include "clang/Rewrite/Core/Rewriter.h"
-#include "clang/Rewrite/Frontend/Rewriters.h"
-#include "llvm/Support/Host.h"
-#include "llvm/Support/raw_ostream.h"
-#include "clang-c/Index.h"
-
-#include "pointerChecker.h"
-#include "switchChecker.h"
-#include "bigVariableChecker.h"
-
-using namespace clang;
-using namespace std;
+#include "myASTVisitor.h"
 
 SourceManager *SM;
 ASTContext *CTX;
-int ForStmtEndLine = 0;
+int ForStmtEndLine = 99999999;
+int WhileStmtEndLine = 99999999;
 int Pointer::numsOfPointer;
 std::ofstream Printer::of;
 
@@ -49,6 +23,21 @@ class MyASTVisitor : public RecursiveASTVisitor<MyASTVisitor>
 public:
   MyASTVisitor(Rewriter &R) : TheRewriter(R) {}
 
+  bool VisitExpr(Expr *e)
+  {
+    smchecker.FindExprNameByToken(e);
+    return true;
+  }
+  bool VisitCallExpr(CallExpr *c)
+  {
+    //smchecker.printCallExprName(c);
+    return true;
+  }
+  bool VisitWhileStmt(WhileStmt *ws)
+  {
+    WhileStmtEndLine = smchecker.findWhileStmtEndLine(ws);
+    return true;
+  }
   bool VisitStmt(Stmt *s)
   {
     // Only care about For statements.
@@ -65,6 +54,7 @@ public:
       tmp = strtok((char *)endLocString.c_str(), delims);
       tmp = strtok(NULL, delims);
       ForStmtEndLine = atoi(tmp);
+      ForStatement->getConditionVariable();
       Stmt::child_range range = body->children();
       for (Stmt::child_iterator r = range.begin(); r != range.end(); r++)
       {
@@ -152,6 +142,10 @@ public:
     tmp = strtok((char *)beginLocString.c_str(), delims);
     tmp = strtok(NULL, delims);
     int BinaryOperatorLine = atoi(tmp);
+
+    //checker
+    smchecker.BinaryOperationCheck(stmt,BinaryOperatorLine,ForStmtEndLine,WhileStmtEndLine);
+
     if(BinaryOperatorLine > ForStmtEndLine)
     {
       //pointer assign? 
@@ -176,46 +170,9 @@ public:
       lp=pc.getPointerByName(lname);
       rp=pc.getPointerByName(rname);
       pc.assignPointer(*lp,*rp);
-      //std::cout<<"ASSIGN POINTER:"<<lname<<" "<<rname<<std::endl;
       return true;
     }
-    PresumedLoc PLoc = (*SM).getPresumedLoc(beginLoc);
-    const char * fname = PLoc.getFilename();
-    int line = PLoc.getLine();
-    int col = PLoc.getColumn();
-    Expr *lhs = stmt->getLHS()->IgnoreImpCasts();
-    Expr *rhs = stmt->getRHS()->IgnoreImpCasts();
-    QualType ltype = lhs->getType();
-    QualType rtype = rhs->getType();
-    if (ltype->isPointerType())
-    {
-      ltype = ltype->getPointeeType();
-    }
-    if (rtype->isPointerType())
-    {
-      rtype = rtype->getPointeeType();
-    }
-    CharUnits lcu = CTX->getTypeSizeInChars(ltype);
-    int lsize = lcu.getQuantity();
-    CharUnits rcu = CTX->getTypeSizeInChars(rtype);
-    int rsize = rcu.getQuantity();
-
-    if ( lsize<=2 )
-    {
-      printf("SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col,ltype.getAsString().c_str(),lsize);
-      char tmpwarn[100];
-      sprintf(tmpwarn,"SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col,ltype.getAsString().c_str(),lsize);
-      std::string tmpwarns(tmpwarn);
-      pc.pprint(tmpwarns);
-    }
-    else if ( rsize<=2 )
-    {
-      printf("SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col,rtype.getAsString().c_str(),rsize);
-      char tmpwarn[100];
-      sprintf(tmpwarn,"SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col,rtype.getAsString().c_str(),rsize);
-      std::string tmpwarns(tmpwarn);
-      pc.pprint(tmpwarns);
-    }
+  
     return true;
   }
 
@@ -327,6 +284,7 @@ private:
   PointerChecker pc;
   SwitchChecker schecker;
   BigVariableChecker bvchecker;
+  SlowMemoryChecker smchecker;
 };
 
 class MyASTConsumer : public ASTConsumer

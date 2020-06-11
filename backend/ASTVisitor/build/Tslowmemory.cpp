@@ -18,6 +18,21 @@ int my_memcmp(void* a, void* b, unsigned int len){
     return 0;
 }
 
+int my_memcmp1(void* a, void* b, unsigned int len){
+    // 低速逐 byte 比较
+    unsigned char* c_a = (unsigned char*) a;
+    unsigned char* c_b = (unsigned char*) b;
+    int i = 0;
+    while(i < len)
+    {
+        unsigned char a = *c_a++, b = *c_b++;
+        if(a>b) return 1;
+        if(b>a) return -1;
+        ++i;
+    }
+    return 0;
+}
+
 int main()
 {
     int a =0;
@@ -33,5 +48,6 @@ int main()
     {
         printf("menor\n");
     }
+    
     return 0;
 }

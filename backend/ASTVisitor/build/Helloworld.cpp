@@ -1,5 +1,6 @@
-#include <stdio.h>
 #include <string.h>
+#include <stdio.h>
+
 
 int inc(int a)
 {
@@ -21,7 +22,7 @@ int main()
     {
         printf("menor\n");
     }
-
+    
 
     return 0;
 }
