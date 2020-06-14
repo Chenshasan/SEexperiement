@@ -1,7 +1,7 @@
 #include <map>
 #include "pointer.h"
-#include "printer.h"
-#include "unionFind.h"
+#include "../common/printer.h"
+#include "../common/unionFind.h"
 const int UF_CAPACITY=100;
 class PointerChecker:public printer
 {

@@ -45,58 +45,18 @@ public:
   //functions
   bool VisitFunctionDecl(FunctionDecl* fd)
   {
-    //cout<<fd->getNameAsString();
-    curFuncName=fd->getNameAsString();
-    if(fd->isImplicit() || curFuncName=="main")
-      return true;
-      //cout<<"IMPL FUNC"<<endl;
-    else
-      //cout<<"EXPT FUNC"<<endl;
+    cout<<"FDECL\n";
+    cout<<fd->getNameAsString()<<'\n';
+    cout<<"FPARAM NUM\n";
+    int num=fd->getNumParams();
+    cout<<num<<'\n';
+    cout<<"FPARAM\n";
+    for(int i=0;i<num;++i)
     {
-      int paramnum=fd->getNumParams();
-      vector<std::string> pointerParmNames;
-      for(int i=0;i<paramnum;++i)
-      {
-        ParmVarDecl* pvdth=fd->getParamDecl(i);
-        std::string typestr=pvdth->getType().getAsString();
-        if(typestr.find('*')!=typestr.npos) pointerParmNames.push_back(pvdth->getNameAsString());
-      }
-      if(pointerParmNames.size()==0) return true;
-      astFunc* af=new astFunc(curFuncName,pointerParmNames.size());
-      for(int i=0;i<pointerParmNames.size();++i) af->setIndByName(pointerParmNames.at(i),i);
-      fc.setFunc(af);
-
-      return true;
-    }
-    // if(curFuncName!="main")
-    // {
-    //   ParmVarDecl* pvd=fd->getParamDecl(0);
-    //   //cout<<endl;
-    //   pvd->getType().dump();
-    //   if(pvd)
-    //     cout<< pvd->getNameAsString()<<endl;
-    // }
-    // return true;
-  }
-  bool VisitCallExpr(CallExpr* ce)
-  {
-    //cout<<"BVVCE"<<endl;
-    int argnum=ce->getNumArgs();
-    Expr** parums=ce->getArgs();
-    if(isa<DeclRefExpr>(ce->getCallee()->IgnoreImpCasts()))
-    {
-      DeclRefExpr* dre=cast<DeclRefExpr>(ce->getCallee()->IgnoreImpCasts());
-      //dre->dumpColor();
-      astFunc* af=fc.getFuncByName(dre->getDecl()->getNameAsString());
-      if(af==nullptr) return true;
-      vector<Pointer*> ptrparams;
-      for(int i=0;i<argnum;++i)
-      {
-        DeclRefExpr* pdre=cast<DeclRefExpr>(parums[i]->IgnoreImpCasts());
-        std::string thisPtrName=pdre->getDecl()->getNameAsString();
-        ptrparams.push_back(pc.getPointerByName(thisPtrName));
-      }
-      fc.func2DerefCheck(dre->getDecl()->getNameAsString(),ptrparams);
+      ParmVarDecl* pvd=fd->getParamDecl(i);
+      cout<<pvd->getNameAsString()<<'\n';
+      QualType pt=pvd->getType();
+      cout<<pt.getAsString()<<'\n';
     }
     return true;
   }
@@ -395,7 +355,7 @@ public:
 private:
   Rewriter &TheRewriter;
   PointerChecker pc;
-  FunctionChecker fc;
+  
 };
 
 class MyASTConsumer : public ASTConsumer
