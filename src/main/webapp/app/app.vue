@@ -1,7 +1,6 @@
 <template>
   <div id="app">
     <div id="app-header">
-      <jhi-navbar></jhi-navbar>
     </div>
     <div class="container-fluid">
       <div class="card jh-card">
@@ -11,8 +10,6 @@
         <span slot="modal-title" id="login-title" v-text="$t('login.title')">Sign in</span>
         <login-form></login-form>
       </b-modal>
-
-      <jhi-footer></jhi-footer>
     </div>
   </div>
 </template>
@@ -22,7 +19,8 @@
 
 <style>
     .container-fluid{
-        margin-top: 70px;
+        margin-top: 50px;
+        margin-bottom: 50px;
     }
 
     #app{

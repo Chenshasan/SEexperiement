@@ -1,6 +1,6 @@
 <template>
-    <div>
-    <b-navbar toggleable="md" type="dark" class="jh-navbar fixed-top">
+    <div class="wrapper">
+    <b-navbar toggleable="sm" type="dark" class="jh-navbar fixed-top">
         <div class="jh-logo-container float-left">
             <b-navbar-toggle right class="jh-navbar-toggler d-lg-none float-right" href="javascript:void(0);"  data-toggle="collapse" target="header-tabs" aria-expanded="false" aria-label="Toggle navigation">
                 <font-awesome-icon icon="bars" />
@@ -153,9 +153,6 @@
   margin-left: 0.15em;
 }
 
-.jh-navbar ul.navbar-nav {
-  padding: 0.5em;
-}
 
 .jh-navbar .navbar-nav .nav-item {
   margin-left: 1.5rem;

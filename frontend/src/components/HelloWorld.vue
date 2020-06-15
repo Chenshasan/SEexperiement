@@ -12,11 +12,17 @@
     </div>
 </template>
 
-<script lang="ts" src="./home.component.ts">
-
+<script>
+export default {
+  name: 'HelloWorld',
+  props: {
+    msg: String
+  }
+}
 </script>
 
-<style>
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
     @media screen and (min-width: 768px){
         .masthead h1 {
             font-size: 110px;
@@ -32,23 +38,23 @@
             font-weight:normal;
             margin-bottom:30px;
         }
-    .masthead {
-        padding: 0px 0 0px;
-        margin-bottom: 30px;
-        margin-top: 30px;
-        color: #fff;
-    }
+        .masthead {
+            padding: 0px 0 0px;
+            margin-bottom: 30px;
+            margin-top: 30px;
+            color: #fff;
+        }
 
-    .jumbotron {
-        position: relative;
-        padding: 200px 200px;
-        color: #fff;
-        text-align: center;
-        text-shadow: 0 1px 3px rgba(0,0,0,.4), 0 0 30px rgba(0,0,0,.075);
-        background: #020031;
-        background: linear-gradient(45deg,#43d8c9,#035aa6);
-        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#020031",endColorstr="#6d3353",GradientType=1);
-        box-shadow: inset 0 3px 7px rgba(255,255,255,.75), inset 0 -3px 7px rgba(255,255,255,.2);
-    }
+        .jumbotron {
+            position: relative;
+            padding: 200px 200px;
+            color: #fff;
+            text-align: center;
+            text-shadow: 0 1px 3px rgba(0,0,0,.4), 0 0 30px rgba(0,0,0,.075);
+            background: #020031;
+            background: linear-gradient(45deg,#43d8c9,#035aa6);
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#020031",endColorstr="#6d3353",GradientType=1);
+            box-shadow: inset 0 3px 7px rgba(255,255,255,.75), inset 0 -3px 7px rgba(255,255,255,.2);
+        }
     }
 </style>
