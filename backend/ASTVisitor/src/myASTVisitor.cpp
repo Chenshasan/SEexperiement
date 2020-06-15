@@ -21,7 +21,8 @@
 
 #include "./pointerChecker/pointerChecker.h"
 #include "./functionChecker/functionChecker.h"
-#define WARNING_TRIGGER_VARIABLE_SIZE (1 * 1024 * 1024 * 8)
+#include "./SwitchChecker/SwitchChecker.h"
+#include "./bigVariableChecker/BigVariableChecker.h"
 
 using namespace clang;
 using namespace std;
@@ -121,18 +122,23 @@ public:
 
       if (isa<VarDecl>(dcl))
       {
-        VarDecl *vd = cast<VarDecl>(dcl);
+        // VarDecl *vd = cast<VarDecl>(dcl);
+        // QualType qt = vd->getType();
+        // uint64_t tsize = vd->getASTContext().getTypeSize(vd->getType());
+        // if (tsize >= WARNING_TRIGGER_VARIABLE_SIZE)
+        // {
+        //   string qtstr = qt.getAsString();
+        //   string locString = beginLoc.printToString(*SM);
+        //   stringstream ssr;
+        //   cout << "Warning: variable is too big::" << locString.c_str() << ": " << qtstr << ": " << bitToMb(tsize) << "Mb" << endl;
+        //   ssr << "Warning: variable is too big::" << locString.c_str() << ": " << qtstr << ": " << bitToMb(tsize) << "Mb" << endl;
+        //   pc.pprint(ssr.str());
+        // }
+        VarDecl* vd = cast<VarDecl>(dcl);
+
+        bvchecker.bigVariableCheck(vd); // checker
+
         QualType qt = vd->getType();
-        uint64_t tsize = vd->getASTContext().getTypeSize(vd->getType());
-        if (tsize >= WARNING_TRIGGER_VARIABLE_SIZE)
-        {
-          string qtstr = qt.getAsString();
-          string locString = beginLoc.printToString(*SM);
-          stringstream ssr;
-          cout << "Warning: variable is too big::" << locString.c_str() << ": " << qtstr << ": " << bitToMb(tsize) << "Mb" << endl;
-          ssr << "Warning: variable is too big::" << locString.c_str() << ": " << qtstr << ": " << bitToMb(tsize) << "Mb" << endl;
-          pc.pprint(ssr.str());
-        }
         if (qt->isPointerType())
         {
           string pname = vd->getNameAsString();
@@ -438,23 +444,7 @@ public:
   }
   bool VisitSwitchStmt(SwitchStmt *s)
   {
-    QualType condType = s->getCond()->getType();
-    for (SwitchCase *sc = s->getSwitchCaseList(); sc; sc = sc->getNextSwitchCase())
-    {
-      if (isa<CaseStmt>(sc))
-      {
-        CaseStmt *cs = cast<CaseStmt>(sc);
-        if (cs->getLHS()->IgnoreImpCasts()->getType() != condType)
-        {
-          SourceLocation beginLoc = cs->getBeginLoc();
-          string locString = beginLoc.printToString(*SM);
-          cout << "Warning: switch case type mismatches cond type::" << locString.c_str() << endl;
-          stringstream ssr;
-          ssr << "Warning: switch case type mismatches cond type::" << locString.c_str() << endl;
-          pc.pprint(ssr.str());
-        }
-      }
-    }
+    schecker.typeMismatchCheck(s); // checker
     return true;
   }
 
@@ -462,6 +452,8 @@ private:
   Rewriter &TheRewriter;
   PointerChecker pc;
   FuncChecker fc;
+  SwitchChecker schecker;
+  BigVariableChecker bvchecker;
 };
 
 class MyASTConsumer : public ASTConsumer
@@ -535,9 +527,4 @@ int main(int argc, char *argv[])
   // llvm::outs() << std::string(RewriteBuf->begin(), RewriteBuf->end());
 
   return 0;
-}
-
-double bitToMb(double bits)
-{
-  return bits / 8 / 1024 / 1024;
 }
