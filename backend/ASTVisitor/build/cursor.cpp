@@ -3,19 +3,19 @@
 #include <iostream>
 #include <fstream>
 
-std::ofstream of; 
+std::ofstream of;
 
-CXChildVisitResult visitor(CXCursor cursor, CXCursor, CXClientData) 
+CXChildVisitResult visitor(CXCursor cursor, CXCursor, CXClientData)
 {
   CXCursorKind kind = clang_getCursorKind(cursor);
 
   if (kind == CXCursorKind::CXCursor_FunctionDecl ||
-      kind == CXCursorKind::CXCursor_CXXMethod) 
+      kind == CXCursorKind::CXCursor_CXXMethod)
   {
     auto cursorName = clang_getCursorDisplayName(cursor);
 
     auto cursorNameStr = std::string(clang_getCString(cursorName));
-    if (cursorNameStr.find("memcpy") == 0) 
+    if (cursorNameStr.find("memcpy") == 0)
     {
 
       CXSourceRange range = clang_getCursorExtent(cursor);
@@ -27,8 +27,8 @@ CXChildVisitResult visitor(CXCursor cursor, CXCursor, CXClientData)
       clang_getFileLocation(location, &file, &line, &column, nullptr);
       auto fileName = clang_getFileName(file);
       of << "Found call to " << clang_getCString(cursorName) << " at "
-                << line << ":" << column << " in " << clang_getCString(fileName)
-                << std::endl;
+         << line << ":" << column << " in " << clang_getCString(fileName)
+         << std::endl;
 
       clang_disposeString(fileName);
     }
@@ -37,11 +37,13 @@ CXChildVisitResult visitor(CXCursor cursor, CXCursor, CXClientData)
   return CXChildVisit_Recurse;
 }
 
-int main(int argc, char **argv) {
-  if (argc < 2) {
+int main(int argc, char **argv)
+{
+  if (argc < 2)
+  {
     return 1;
   }
-  of.open("result.txt",std::ios::in);
+  of.open("result.txt", std::ios::in);
 
   // Command line arguments required for parsing the TU
   constexpr const char *ARGUMENTS[] = {};

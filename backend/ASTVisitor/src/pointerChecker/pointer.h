@@ -1,10 +1,11 @@
 #pragma once
 #include <string>
 #include <iostream>
-    const int isNULL = 1; //null pointer
-    const int isVALID = 2; //valid pointer--can be deref
-    const int isUNPREDICTABLE = 3; //uninitialized pointer or pointer after free/delete
-    const int isFREED = 4;//pointer that has been freed
+#include <utility>
+const int isNULL = 1; //null pointer
+const int isVALID = 2; //valid pointer--can be deref
+const int isUNPREDICTABLE = 3; //uninitialized pointer or pointer after free/delete
+const int isFREED = 4;//pointer that has been freed
 class Pointer
 {
 public:
@@ -15,31 +16,43 @@ public:
     {
         ++numsOfPointer;
     }
-    Pointer(const std::string &name):_name(name),_state(isUNPREDICTABLE),_id(numsOfPointer),_isnewed(false)
+    explicit Pointer(std::string name):
+    _name(std::move(name)),
+    _state(isUNPREDICTABLE),
+    _id(numsOfPointer),
+    _isnewed(false)
     {
         numsAdd();
     }
-    Pointer(const std::string &name,const int &ps):_name(name),_state(ps),_id(numsOfPointer),_isnewed(false)
+    Pointer(std::string name,const int &ps):
+    _name(std::move(name)),
+    _state(ps),
+    _id(numsOfPointer),
+    _isnewed(false)
     {
         numsAdd();
     }
-    Pointer(const std::string &name,const int &ps,const bool &nw):_name(name),_state(ps),_id(numsOfPointer),_isnewed(nw)
+    Pointer(std::string name,const int &ps,const bool &nw):
+    _name(std::move(name)),
+    _state(ps),
+    _id(numsOfPointer),
+    _isnewed(nw)
     {
         numsAdd();
     }
-    int getState() const 
+    int getState() const
     {
         return _state;
     }
-    const int getid() const
+    int getid() const
     {
         return _id;
     }
-    const bool getNew() const
+    bool getNew() const
     {
         return _isnewed;
     }
-    std::string getName() const 
+    std::string getName() const
     {
         return _name;
     }
@@ -53,8 +66,8 @@ public:
     {
         _isnewed=b;
     }
-    bool operator==(Pointer& rhs) {return this->_id==rhs.getid();}
-    bool operator!=(Pointer& rhs) {return !(*this==rhs);}
+    bool operator==(Pointer& rhs) const {return this->_id==rhs.getid();}
+    bool operator!=(Pointer& rhs) const {return !(*this==rhs);}
     void dump()
     {
         std::cout<<"___POINTER DUMP____"<<std::endl;
@@ -73,7 +86,6 @@ public:
     }
 private:
     std::string _name;
-    std::string _infuncname;
     bool _isnewed;
     int _state;
     int _id;

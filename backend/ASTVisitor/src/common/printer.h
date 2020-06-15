@@ -5,12 +5,12 @@ class printer
 public:
     printer()
     {
-
     }
-    void pprint(const std::string& s)
+    void pprint(const std::string &s)
     {
-        of<<s;
+        of << s;
     }
+
 protected:
     static std::ofstream of;
 };
