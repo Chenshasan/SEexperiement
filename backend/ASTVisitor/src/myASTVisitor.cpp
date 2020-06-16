@@ -30,18 +30,17 @@
 #include "clang-c/Index.h"
 
 #include "pointerChecker.h"
-
-#define WARNING_TRIGGER_VARIABLE_SIZE (1*1024*1024*8)
+#include "switchChecker.h"
+#include "bigVariableChecker.h"
 
 using namespace clang;
 using namespace std;
-
-double bitToMb(double bits);
 
 SourceManager *SM;
 ASTContext *CTX;
 int ForStmtEndLine = 0;
 int Pointer::numsOfPointer;
+std::ofstream Printer::of;
 
 // By implementing RecursiveASTVisitor, we can specify which AST nodes
 // we're interested in by overriding relevant methods.
@@ -92,13 +91,10 @@ public:
       if(isa<VarDecl>(dcl))
       {
         VarDecl* vd = cast<VarDecl>(dcl);
+
+        bvchecker.bigVariableCheck(vd); // checker
+
         QualType qt = vd->getType();
-        uint64_t tsize = vd->getASTContext().getTypeSize(vd->getType());
-        if (tsize >=  WARNING_TRIGGER_VARIABLE_SIZE) {
-          string qtstr = qt.getAsString();
-          string locString = beginLoc.printToString(*SM);
-          cout << "Warning: variable is too big::" << locString.c_str() << ": " << qtstr << ": " << bitToMb(tsize) << "Mb" << endl;
-        }
         if(qt->isPointerType())
         {
           string pname=vd->getNameAsString();
@@ -207,13 +203,22 @@ public:
     if ( lsize<=2 )
     {
       printf("SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col,ltype.getAsString().c_str(),lsize);
+      char tmpwarn[100];
+      sprintf(tmpwarn,"SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col,ltype.getAsString().c_str(),lsize);
+      std::string tmpwarns(tmpwarn);
+      pc.pprint(tmpwarns);
     }
     else if ( rsize<=2 )
     {
       printf("SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col,rtype.getAsString().c_str(),rsize);
+      char tmpwarn[100];
+      sprintf(tmpwarn,"SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col,rtype.getAsString().c_str(),rsize);
+      std::string tmpwarns(tmpwarn);
+      pc.pprint(tmpwarns);
     }
     return true;
   }
+
   bool VisitArraySubscriptExpr(ArraySubscriptExpr* ase)
   {
     SourceLocation beginLoc = ase->getBeginLoc();
@@ -247,15 +252,24 @@ public:
       if(arrMaxSize==-1) return true;
       if(arrMaxSize<=indexSize)
       {
+        stringstream ssr;
         cout<<"Warning: Array out-of-bound access :";
         cout<<arrName;
         cout<<":Try to access index "<<indexSize;
         cout<<" while the max size is:"<<arrMaxSize;
         cout<<":"<<beginLocString<<endl;
+
+        ssr<<"Warning: Array out-of-bound access :";
+        ssr<<arrName;
+        ssr<<":Try to access index "<<indexSize;
+        ssr<<" while the max size is:"<<arrMaxSize;
+        ssr<<":"<<beginLocString<<endl;
+        pc.pprint(ssr.str());
       }
     }
     return true;
   }
+
   bool VisitUnaryOperator(UnaryOperator* u)
   {
     SourceLocation beginLoc = u->getBeginLoc();
@@ -268,13 +282,19 @@ public:
       if(opstr.find('*')!=opstr.npos)
       {
         std::string pname=dre->getNameInfo().getAsString();
-        pc.nullDerefCheck(*(pc.getPointerByName(pname)));
-        std::cout<<" ::"<<beginLocString<<'\n';
+        if(pc.nullDerefCheck(*(pc.getPointerByName(pname)))<0)
+        {
+          std::cout<<" ::"<<beginLocString<<'\n';
+          stringstream ssr;
+          ssr<<" ::"<<beginLocString<<'\n';
+          pc.pprint(ssr.str());
+        }
       }
     }
     //std::cout<<u->getOpcodeStr(u->getOpcode()).str()<<'\n';
     return true;
   }
+
   bool VisitCXXDeleteExpr(CXXDeleteExpr* cde)
   {
     //std::cout<<"CXXDEL"<<'\n';
@@ -289,123 +309,24 @@ public:
     if(!success)
     {
       std::cout<<" ::"<<beginLocString<<'\n';
-    }
-    return true;
-  }
-  bool VisitSwitchStmt(SwitchStmt* s)
-  {
-    QualType condType = s->getCond()->getType();
-    for (SwitchCase* sc = s->getSwitchCaseList(); sc; sc = sc->getNextSwitchCase())
-    {
-      if (isa<CaseStmt>(sc))
-      {
-        CaseStmt* cs = cast<CaseStmt>(sc);
-        if (cs->getLHS()->IgnoreImpCasts()->getType() != condType) {
-          SourceLocation beginLoc = cs->getBeginLoc();
-          string locString = beginLoc.printToString(*SM);
-          cout << "Warning: switch case type mismatches cond type::" << locString.c_str() << endl;
-        }
-      }
-    }
-    return true;
-  }
-
-  bool VisitBinaryOperator(BinaryOperator *stmt)
-  {
-    SourceLocation beginLoc = stmt->getBeginLoc();
-    string beginLocString = beginLoc.printToString(*SM);
-    char delims[] = ":";
-    char *tmp = NULL;
-    tmp = strtok((char *)beginLocString.c_str(), delims);
-    tmp = strtok(NULL, delims);
-    int BinaryOperatorLine = atoi(tmp);
-    if(BinaryOperatorLine > ForStmtEndLine)
-    {
-      return false;
-    }
-
-    PresumedLoc PLoc = (*SM).getPresumedLoc(beginLoc);
-    const char * fname = PLoc.getFilename();
-    int line = PLoc.getLine();
-    int col = PLoc.getColumn();
-    Expr *lhs = stmt->getLHS()->IgnoreImpCasts();
-    Expr *rhs = stmt->getRHS()->IgnoreImpCasts();
-    QualType ltype = lhs->getType();
-    QualType rtype = rhs->getType();
-    if (ltype->isPointerType())
-    {
-      ltype = ltype->getPointeeType();
-    }
-    if (rtype->isPointerType())
-    {
-      rtype = rtype->getPointeeType();
-    }
-    CharUnits lcu = CTX->getTypeSizeInChars(ltype);
-    int lsize = lcu.getQuantity();
-    CharUnits rcu = CTX->getTypeSizeInChars(rtype);
-    int rsize = rcu.getQuantity();
-
-    if ( lsize<=2 )
-    {
-      printf("SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col,ltype.getAsString().c_str(),lsize);
-    }
-    else if ( rsize<=2 )
-    {
-      printf("SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col,rtype.getAsString().c_str(),rsize);
+      stringstream ssr;
+      ssr<<" ::"<<beginLocString<<'\n';
+      pc.pprint(ssr.str());
     }
     return true;
   }
 
   bool VisitSwitchStmt(SwitchStmt* s)
   {
-    QualType condType = s->getCond()->getType();
-    for (SwitchCase* sc = s->getSwitchCaseList(); sc; sc = sc->getNextSwitchCase())
-    {
-      if (isa<CaseStmt>(sc))
-      {
-        CaseStmt* cs = cast<CaseStmt>(sc);
-        if (cs->getLHS()->IgnoreImpCasts()->getType() != condType) {
-          SourceLocation beginLoc = cs->getBeginLoc();
-          string locString = beginLoc.printToString(*SM);
-          cout << "Warning: switch case type mismatches cond type::" << locString.c_str() << endl;
-        }
-      }
-    }
+    schecker.typeMismatchCheck(s); // checker
     return true;
-  }
-
-  bool VisitArraySubscriptExpr(ArraySubscriptExpr* stmt)
-  {
-      Expr *lhs = stmt->getBase()->IgnoreImpCasts();
-      Expr *rhs = stmt->getIdx()->IgnoreImpCasts();
-      QualType ltype = lhs->getType();
-      QualType rtype = rhs->getType();
-      Type* lTypePtr = ltype.getTypePtr();
-      Type* rTypePtr = rtype.getTypePtr();
-      if (lTypePtr->isConstantArrayType())
-      {
-          ConstantArrayType* arr = (ConstantArrayType* )ltype->getAsOpaquePtr();
-          int length1 = arr.getSize();
-      }
-      MyASTConsumer TheConsumer(TheRewriter);
-      ASTContext &context = TheCompInst.getASTContext();
-      int &length2 = 0;
-      rhs->isIntegerConstantExpr(x, context);
-      if (isa<CaseStmt>(stmt))
-      {
-          CaseStmt* cs = cast<CaseStmt>(stmt);
-          if (length1 < =length2) {
-              SourceLocation beginLoc = cs->getBeginLoc();
-              string locString = beginLoc.printToString(*SM);
-              cout << "Warning: array may out of range::" << locString.c_str() << endl;
-          }
-      }
-      return true;
   }
 
 private:
   Rewriter &TheRewriter;
   PointerChecker pc;
+  SwitchChecker schecker;
+  BigVariableChecker bvchecker;
 };
 
 class MyASTConsumer : public ASTConsumer
@@ -460,6 +381,13 @@ int main(int argc, char *argv[])
 
   // Set the main file
   const FileEntry *FileIn = FileMgr.getFile(argv[1]);
+
+  if (!FileIn)
+  {
+    cout << "Src file can't be found" << endl;
+    return 1;
+  }
+
   SourceMgr.setMainFileID(
       SourceMgr.createFileID(FileIn, SourceLocation(), SrcMgr::C_User));
   TheCompInst.getDiagnosticClient().BeginSourceFile(
@@ -479,8 +407,4 @@ int main(int argc, char *argv[])
   // llvm::outs() << std::string(RewriteBuf->begin(), RewriteBuf->end());
 
   return 0;
-}
-
-double bitToMb(double bits) {
-  return bits / 8 / 1024 / 1024;
 }
