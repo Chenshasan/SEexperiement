@@ -28,6 +28,10 @@ export default class Home extends Vue {
     this.loginService().openLogin((<any>this).$root);
   }
 
+  public jump() {
+    this.$router.push({ name: 'UploadComponent' });
+  }
+
   public get authenticated(): boolean {
     return this.$store.getters.authenticated;
   }

@@ -40,11 +40,10 @@ export default{
         headers: {},
         query() {},
         categaryMap: { //用于限制上传的类型
-          image: ["gif", "jpg", "jpeg", "png", "bmp","cpp"],
+          document: ["gif", "jpg", "jpeg", "png", "bmp","cpp"],
         }
       },
       attrs: {
-        accept:  ["gif", "jpg", "jpeg", "png", "bmp","cpp"],
       },
     }
   },

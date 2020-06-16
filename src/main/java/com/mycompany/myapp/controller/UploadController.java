@@ -61,6 +61,8 @@ public class UploadController {
                 }
                 Path path = Paths.get(SINGLE_FOLDER,temp.getOriginalFilename());
                 Files.write(path, bytes);
+                Path solution_path=Paths.get(SINGLE_FOLDER,temp.getOriginalFilename()+"_solution.txt");
+                Files.write(solution_path,bytes);
             } catch (IOException e) {
                 e.printStackTrace();
             }
