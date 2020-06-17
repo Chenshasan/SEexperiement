@@ -1,13 +1,3 @@
-//------------------------------------------------------------------------------
-// Clang rewriter sample. Demonstrates:
-//
-// * How to use RecursiveASTVisitor to find interesting AST nodes.
-// * How to use the Rewriter API to rewrite the source code.
-//
-// Eli Bendersky (eliben@gmail.com)
-// This code is in the public domain
-//------------------------------------------------------------------------------
-#include <cstdio>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -29,9 +19,10 @@
 #include "llvm/Support/raw_ostream.h"
 #include "clang-c/Index.h"
 
-#include "pointerChecker.h"
-#include "switchChecker.h"
-#include "bigVariableChecker.h"
+#include "./pointerChecker/pointerChecker.h"
+#include "./functionChecker/functionChecker.h"
+#include "./SwitchChecker/SwitchChecker.h"
+#include "./bigVariableChecker/BigVariableChecker.h"
 
 using namespace clang;
 using namespace std;
@@ -40,7 +31,8 @@ SourceManager *SM;
 ASTContext *CTX;
 int ForStmtEndLine = 0;
 int Pointer::numsOfPointer;
-std::ofstream Printer::of;
+std::string curFuncName;
+std::ofstream printer::of;
 
 // By implementing RecursiveASTVisitor, we can specify which AST nodes
 // we're interested in by overriding relevant methods.
@@ -48,6 +40,44 @@ class MyASTVisitor : public RecursiveASTVisitor<MyASTVisitor>
 {
 public:
   MyASTVisitor(Rewriter &R) : TheRewriter(R) {}
+  //functions
+  bool VisitFunctionDecl(FunctionDecl *fd)
+  {
+    // cout << "FDECL\n";
+    // cout << fd->getNameAsString() << '\n';
+    // cout << "FPARAM NUM\n";
+    int num = fd->getNumParams();
+    // cout << num << '\n';
+    // cout << "FPARAM\n";
+    std::vector<std::string> xxparams;
+    for (int i = 0; i < num; ++i)
+    {
+      ParmVarDecl *pvd = fd->getParamDecl(i);
+      //cout << pvd->getNameAsString() << '\n';
+      QualType pt = pvd->getType();
+      //cout << pt.getAsString() << '\n';
+      if (pt->isPointerType())
+      {
+        xxparams.push_back(pvd->getNameAsString());
+      }
+    }
+    string funcName = fd->getNameAsString();
+    pc.stepInFunc(funcName);
+    if (xxparams.size() != 0 || funcName == "main")
+    {
+      //cout << "STEPIN " << fd->getNameAsString() << '\n';
+      fc.stepInFunc(fd->getNameAsString(), xxparams);
+      for (string s : xxparams)
+      {
+        //cout << "O " << s << '\n';
+        Pointer *p = new Pointer(s, isVALID, true);
+        pc.declPointer(p);
+        //cout << "PC insert" << s << "  funcname" << fd->getNameAsString() << '\n';
+      }
+    }
+    //cout << "STEPIN " << fd->getNameAsString() << '\n';
+    return true;
+  }
 
   bool VisitStmt(Stmt *s)
   {
@@ -75,76 +105,133 @@ public:
     }
     else if (isa<DeclStmt>(s))
     {
-      DeclStmt* ds = cast<DeclStmt>(s);
+      DeclStmt *ds = cast<DeclStmt>(s);
       SourceLocation beginLoc = ds->getBeginLoc();
       //Decl* dcl=ds->getDeclGroup().getSingleDecl();   //will hit assertion when ds->getDeclGroup() is not SingleDecl
-      Decl* dcl=NULL;
-      if(ds->getDeclGroup().isSingleDecl())
+      Decl *dcl = NULL;
+      if (ds->getDeclGroup().isSingleDecl())
       {
-        dcl=ds->getDeclGroup().getSingleDecl();
+        dcl = ds->getDeclGroup().getSingleDecl();
       }
       else
       {
-        dcl=*(ds->getDeclGroup().begin());
+        dcl = *(ds->getDeclGroup().begin());
       }
 
-      if(isa<VarDecl>(dcl))
+      if (isa<VarDecl>(dcl))
       {
+        // VarDecl *vd = cast<VarDecl>(dcl);
+        // QualType qt = vd->getType();
+        // uint64_t tsize = vd->getASTContext().getTypeSize(vd->getType());
+        // if (tsize >= WARNING_TRIGGER_VARIABLE_SIZE)
+        // {
+        //   string qtstr = qt.getAsString();
+        //   string locString = beginLoc.printToString(*SM);
+        //   stringstream ssr;
+        //   cout << "Warning: variable is too big::" << locString.c_str() << ": " << qtstr << ": " << bitToMb(tsize) << "Mb" << endl;
+        //   ssr << "Warning: variable is too big::" << locString.c_str() << ": " << qtstr << ": " << bitToMb(tsize) << "Mb" << endl;
+        //   pc.pprint(ssr.str());
+        // }
         VarDecl* vd = cast<VarDecl>(dcl);
 
         bvchecker.bigVariableCheck(vd); // checker
 
         QualType qt = vd->getType();
-        if(qt->isPointerType())
+        if (qt->isPointerType())
         {
-          string pname=vd->getNameAsString();
-          //std::cout<<pname<<'\n';
-          Pointer* p;
-          if(vd->hasInit())
+          string pname = vd->getNameAsString();
+          //std::cout << pname << '\n';
+          Pointer *p;
+          if (vd->hasInit())
           {
-            Expr* vgi=vd->getInit()->IgnoreImpCasts();
+            Expr *vgi = vd->getInit()->IgnoreImpCasts();
             //vgi->dumpColor();
-            if(isa<CXXNewExpr>(vgi))
+            if (isa<CXXNewExpr>(vgi))
             {
-              p=new Pointer(pname,isVALID,true);
+              p = new Pointer(pname, isVALID, true);
               pc.declPointer(p);
             }
-            else if(isa<DeclRefExpr>(vgi))
+            else if (isa<DeclRefExpr>(vgi))
             {
-              DeclRefExpr* dre=cast<DeclRefExpr>(vgi);
-              std::string rpname=dre->getNameInfo().getAsString();
-              Pointer* rhs=pc.getPointerByName(rpname);
-              p=new Pointer(pname,isVALID);
+              DeclRefExpr *dre = cast<DeclRefExpr>(vgi);
+              std::string rpname = dre->getNameInfo().getAsString();
+              Pointer *rhs = pc.getPointerByName(rpname);
+              p = new Pointer(pname, isVALID);
               pc.declPointer(p);
-              if(rhs)
+              if (rhs)
               {
-                pc.assignPointer(*p,*rhs);
-                //std::cout<<"INIT ASSIGN"<<p->getName()<<" "<<rhs->getName()<<std::endl;
+                pc.assignPointer(*p, *rhs);
+                //std::cout << "INIT ASSIGN" << p->getName() << " " << rhs->getName() << std::endl;
               }
             }
             else
             {
-              p=new Pointer(pname,isVALID);
+              p = new Pointer(pname, isVALID);
               pc.declPointer(p);
             }
           }
           else
           {
-            p=new Pointer(pname);
+            p = new Pointer(pname);
             pc.declPointer(p);
           }
-          //pc.declPointer(p);
+          pc.declPointer(p);
           //p->dump();
-          //std::cout<<"decl "<<p->getName()<<'\n';
+          //std::cout << "decl " << p->getName() << '\n';
         }
       }
     }
     return true;
   }
-
+  bool VisitCallExpr(CallExpr *ce)
+  {
+    DeclRefExpr *dre = cast<DeclRefExpr>(ce->getCallee()->IgnoreImpCasts());
+    string funcName = dre->getNameInfo().getAsString();
+    int args = ce->getNumArgs();
+    int pcount = 0;
+    for (int i = 0; i < args; ++i)
+    {
+      Expr *arg = ce->getArg(i)->IgnoreImpCasts();
+      //arg->dumpColor();
+      if (arg->getType()->isPointerType())
+      {
+        //cout << "!" << args << endl;
+        DeclRefExpr *pdre = cast<DeclRefExpr>(arg);
+        string pointerParamName = pdre->getNameInfo().getAsString();
+        Pointer *p = pc.getPointerByName(pointerParamName);
+        //cout << funcName;
+        if (fc.isFuncParamNullByFuncNameAndIndex(funcName, pcount))
+        {
+          p->setState(isNULL);
+        }
+        else if (fc.isFuncParamFreeByFuncNameAndIndex(funcName, pcount))
+        {
+          bool success = false;
+          pc.freePointer(*p, success);
+          if (!success)
+          {
+            SourceLocation beginLoc = ce->getBeginLoc();
+            string beginLocString = beginLoc.printToString(*SM);
+            std::cout << " ::" << beginLocString << '\n';
+            stringstream ssr;
+            ssr << " ::" << beginLocString << '\n';
+            pc.pprint(ssr.str());
+          }
+        }
+        pcount++;
+      }
+    }
+    //fc.isFuncParamFreeByFuncNameAndIndex(funcName,);
+    return true;
+  }
+  bool VisitCXXNullPtrLiteralExpr(CXXNullPtrLiteralExpr *cnpe)
+  {
+    cout << "NULL\n";
+    return true;
+  }
   bool VisitBinaryOperator(BinaryOperator *stmt)
   {
-    //stmt->dumpColor();
+    //stmt->dump();
     SourceLocation beginLoc = stmt->getBeginLoc();
     string beginLocString = beginLoc.printToString(*SM);
     char delims[] = ":";
@@ -152,35 +239,63 @@ public:
     tmp = strtok((char *)beginLocString.c_str(), delims);
     tmp = strtok(NULL, delims);
     int BinaryOperatorLine = atoi(tmp);
-    if(BinaryOperatorLine > ForStmtEndLine)
+    if (BinaryOperatorLine > ForStmtEndLine)
     {
-      //pointer assign? 
+      //pointer assign?
       Expr *lhs = stmt->getLHS()->IgnoreImpCasts();
       Expr *rhs = stmt->getRHS()->IgnoreImpCasts();
-      if(lhs->getType()->isPointerType() && rhs->getType()->isPointerType())
+      //rhs->dumpColor();
+      if (lhs->getType()->isPointerType() &&
+          (rhs->getType()->isPointerType() ||
+           isa<IntegerLiteral>(rhs->IgnoreImpCasts())))
         ;
-        //std::cout<<"Pointer assign"<<std::endl;
-      else return true;
-      std::string lname,rname;
-      DeclRefExpr* ldre,*rdre;
+      //std::cout<<"Pointer assign"<<std::endl;
+      else
+        return true;
+      std::string lname, rname;
+      DeclRefExpr *ldre, *rdre;
       //TODO
-      if(isa<DeclRefExpr>(lhs))
-        ldre=cast<DeclRefExpr>(lhs);
-      else return true;
-      if(isa<DeclRefExpr>(rhs))
-        rdre=cast<DeclRefExpr>(rhs);
-      else return true;
-      lname=ldre->getNameInfo().getAsString();
-      rname=rdre->getNameInfo().getAsString();
-      Pointer* lp,*rp;
-      lp=pc.getPointerByName(lname);
-      rp=pc.getPointerByName(rname);
-      pc.assignPointer(*lp,*rp);
-      //std::cout<<"ASSIGN POINTER:"<<lname<<" "<<rname<<std::endl;
+      if (isa<DeclRefExpr>(lhs))
+        ldre = cast<DeclRefExpr>(lhs);
+      else
+        return true;
+      if (isa<DeclRefExpr>(rhs))
+        rdre = cast<DeclRefExpr>(rhs);
+      else
+      {
+        if (isa<IntegerLiteral>(rhs->IgnoreImpCasts()))
+        {
+          IntegerLiteral *iL = cast<IntegerLiteral>(rhs->IgnoreImpCasts());
+          if (iL->getValue().toString(10, true) != "0")
+            return true;
+          //cout << "RHS NULLPTR\n";
+          lname = ldre->getNameInfo().getAsString();
+          Pointer *lp;
+          lp = pc.getPointerByName(lname);
+          lp->setState(isNULL);
+          if (pc.getFuncName() != "main")
+          {
+            //cout<<"PFH NULL "<<lname<<'\n';
+            if (fc.isProcFuncHasParam(lname))
+            {
+              //cout << "PFH NULL " << lname << '\n';
+              fc.setProcFuncPtrNullByName(lname);
+            }
+          }
+        }
+        return true;
+      }
+      lname = ldre->getNameInfo().getAsString();
+      rname = rdre->getNameInfo().getAsString();
+      Pointer *lp, *rp;
+      lp = pc.getPointerByName(lname);
+      rp = pc.getPointerByName(rname);
+      pc.assignPointer(*lp, *rp);
+      //std::cout << "ASSIGN POINTER:" << lname << " " << rname << std::endl;
       return true;
     }
     PresumedLoc PLoc = (*SM).getPresumedLoc(beginLoc);
-    const char * fname = PLoc.getFilename();
+    const char *fname = PLoc.getFilename();
     int line = PLoc.getLine();
     int col = PLoc.getColumn();
     Expr *lhs = stmt->getLHS()->IgnoreImpCasts();
@@ -200,93 +315,95 @@ public:
     CharUnits rcu = CTX->getTypeSizeInChars(rtype);
     int rsize = rcu.getQuantity();
 
-    if ( lsize<=2 )
+    if (lsize <= 2)
     {
-      printf("SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col,ltype.getAsString().c_str(),lsize);
+      printf("SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col, ltype.getAsString().c_str(), lsize);
       char tmpwarn[100];
-      sprintf(tmpwarn,"SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col,ltype.getAsString().c_str(),lsize);
+      sprintf(tmpwarn, "SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col, ltype.getAsString().c_str(), lsize);
       std::string tmpwarns(tmpwarn);
       pc.pprint(tmpwarns);
     }
-    else if ( rsize<=2 )
+    else if (rsize <= 2)
     {
-      printf("SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col,rtype.getAsString().c_str(),rsize);
+      printf("SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col, rtype.getAsString().c_str(), rsize);
       char tmpwarn[100];
-      sprintf(tmpwarn,"SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col,rtype.getAsString().c_str(),rsize);
+      sprintf(tmpwarn, "SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col, rtype.getAsString().c_str(), rsize);
       std::string tmpwarns(tmpwarn);
       pc.pprint(tmpwarns);
     }
     return true;
   }
-
-  bool VisitArraySubscriptExpr(ArraySubscriptExpr* ase)
+  bool VisitArraySubscriptExpr(ArraySubscriptExpr *ase)
   {
     SourceLocation beginLoc = ase->getBeginLoc();
     string beginLocString = beginLoc.printToString(*SM);
     //std::cout<<"inarr\n";
     Expr *lhs = ase->getBase()->IgnoreImpCasts();
     Expr *rhs = ase->getIdx()->IgnoreImpCasts();
-    int arrMaxSize=-1;
+    int arrMaxSize = -1;
     string arrName;
-    if(isa<DeclRefExpr>(lhs))
+    if (isa<DeclRefExpr>(lhs))
     {
-      DeclRefExpr* ldre=cast<DeclRefExpr>(lhs);
-      arrName=ldre->getNameInfo().getAsString();
-      QualType qt=ldre->getType();
-      std::string qas=qt.getAsString();
+      DeclRefExpr *ldre = cast<DeclRefExpr>(lhs);
+      arrName = ldre->getNameInfo().getAsString();
+      QualType qt = ldre->getType();
+      std::string qas = qt.getAsString();
       //cout<<qt.getAsString()<<'\n';
       //TODO only 1-d
-      int lbrack,rbrack;
-      lbrack=qas.find_first_of('[');
-      rbrack=qas.find_first_of(']');
+      int lbrack, rbrack;
+      lbrack = qas.find_first_of('[');
+      rbrack = qas.find_first_of(']');
       //arrMaxSize=
       //std::cout<<qas.substr(lbrack+1,rbrack-lbrack-1)<<endl;
-      arrMaxSize=std::stoi(qas.substr(lbrack+1,rbrack-lbrack-1));
+      arrMaxSize = std::stoi(qas.substr(lbrack + 1, rbrack - lbrack - 1));
       //std::cout<<"AMS"<<arrMaxSize<<endl;
     }
-    if(isa<IntegerLiteral>(rhs))
+    if (isa<IntegerLiteral>(rhs))
     {
-      IntegerLiteral* il=cast<IntegerLiteral>(rhs);
-      uint64_t indexSize=il->getValue().getLimitedValue();
+      IntegerLiteral *il = cast<IntegerLiteral>(rhs);
+      uint64_t indexSize = il->getValue().getLimitedValue();
       //std::cout<<"IDS "<<indexsize<<endl;
-      if(arrMaxSize==-1) return true;
-      if(arrMaxSize<=indexSize)
+      if (arrMaxSize == -1)
+        return true;
+      if (arrMaxSize <= indexSize)
       {
         stringstream ssr;
-        cout<<"Warning: Array out-of-bound access :";
-        cout<<arrName;
-        cout<<":Try to access index "<<indexSize;
-        cout<<" while the max size is:"<<arrMaxSize;
-        cout<<":"<<beginLocString<<endl;
+        cout << "Warning: Array out-of-bound access :";
+        cout << arrName;
+        cout << ":Try to access index " << indexSize;
+        cout << " while the max size is:" << arrMaxSize;
+        cout << ":" << beginLocString << endl;
 
-        ssr<<"Warning: Array out-of-bound access :";
-        ssr<<arrName;
-        ssr<<":Try to access index "<<indexSize;
-        ssr<<" while the max size is:"<<arrMaxSize;
-        ssr<<":"<<beginLocString<<endl;
+        ssr << "Warning: Array out-of-bound access :";
+        ssr << arrName;
+        ssr << ":Try to access index " << indexSize;
+        ssr << " while the max size is:" << arrMaxSize;
+        ssr << ":" << beginLocString << endl;
         pc.pprint(ssr.str());
       }
     }
     return true;
   }
 
-  bool VisitUnaryOperator(UnaryOperator* u)
+  bool VisitUnaryOperator(UnaryOperator *u)
   {
     SourceLocation beginLoc = u->getBeginLoc();
     string beginLocString = beginLoc.printToString(*SM);
     //std::cout<<"Unary OP"<<'\n';
-    if(isa<DeclRefExpr>(u->getSubExpr()->IgnoreImpCasts()))
+    if (isa<DeclRefExpr>(u->getSubExpr()->IgnoreImpCasts()))
     {
-      DeclRefExpr* dre=cast<DeclRefExpr>(u->getSubExpr()->IgnoreImpCasts());
-      std::string opstr=u->getOpcodeStr(u->getOpcode()).str();
-      if(opstr.find('*')!=opstr.npos)
+      DeclRefExpr *dre = cast<DeclRefExpr>(u->getSubExpr()->IgnoreImpCasts());
+      std::string opstr = u->getOpcodeStr(u->getOpcode()).str();
+      if (opstr.find('*') != opstr.npos)
       {
-        std::string pname=dre->getNameInfo().getAsString();
-        if(pc.nullDerefCheck(*(pc.getPointerByName(pname)))<0)
+        std::string pname = dre->getNameInfo().getAsString();
+        //if(pc.getFuncName()!="main") return true;
+        //cout << "Pnullderef" << pname << '\n';
+        if (pc.nullDerefCheck(*(pc.getPointerByName(pname))) < 0)
         {
-          std::cout<<" ::"<<beginLocString<<'\n';
+          std::cout << " ::" << beginLocString << '\n';
           stringstream ssr;
-          ssr<<" ::"<<beginLocString<<'\n';
+          ssr << " ::" << beginLocString << '\n';
           pc.pprint(ssr.str());
         }
       }
@@ -295,28 +412,37 @@ public:
     return true;
   }
 
-  bool VisitCXXDeleteExpr(CXXDeleteExpr* cde)
+  bool VisitCXXDeleteExpr(CXXDeleteExpr *cde)
   {
     //std::cout<<"CXXDEL"<<'\n';
+    // if (pc.getFuncName() != "main")
+    //   return true;
     SourceLocation beginLoc = cde->getBeginLoc();
     string beginLocString = beginLoc.printToString(*SM);
-    DeclRefExpr* dre=cast<DeclRefExpr>(cde->getArgument()->IgnoreImpCasts());
+    DeclRefExpr *dre = cast<DeclRefExpr>(cde->getArgument()->IgnoreImpCasts());
     //dre->dumpColor();
-    Pointer* p2free=pc.getPointerByName(dre->getNameInfo().getAsString());
+    Pointer *p2free = pc.getPointerByName(dre->getNameInfo().getAsString());
     //p2free->dump();
-    bool success=false;
-    pc.freePointer(*p2free,success);
-    if(!success)
+    bool success = false;
+    pc.freePointer(*p2free, success);
+    if (!success)
     {
-      std::cout<<" ::"<<beginLocString<<'\n';
+      std::cout << " ::" << beginLocString << '\n';
       stringstream ssr;
-      ssr<<" ::"<<beginLocString<<'\n';
+      ssr << " ::" << beginLocString << '\n';
       pc.pprint(ssr.str());
+    }
+    else if (pc.getFuncName() != "main")
+    {
+      if (fc.isProcFuncHasParam(p2free->getName()))
+      {
+        //cout << "PFH FREE " << p2free->getName() << '\n';
+        fc.setProcFuncPtrFreeByName(p2free->getName());
+      }
     }
     return true;
   }
-
-  bool VisitSwitchStmt(SwitchStmt* s)
+  bool VisitSwitchStmt(SwitchStmt *s)
   {
     schecker.typeMismatchCheck(s); // checker
     return true;
@@ -325,6 +451,7 @@ public:
 private:
   Rewriter &TheRewriter;
   PointerChecker pc;
+  FuncChecker fc;
   SwitchChecker schecker;
   BigVariableChecker bvchecker;
 };

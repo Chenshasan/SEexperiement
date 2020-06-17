@@ -1,5 +1,5 @@
 <template>
-    <div >
+    <div id="wrapper">
         <div class="jumbotron masthead">
             <div class="container">
                 <h1>XAnalysis</h1>
@@ -24,6 +24,12 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
     @media screen and (min-width: 768px){
+        #wrapper{
+            box-shadow: 0 3px 7px rgba(0,0,0,.75), 0 -3px 7px rgba(0,0,0,.2);
+            padding: 20px 30px;
+            margin-top: 50px;
+        }
+
         .masthead h1 {
             font-size: 110px;
             font-weight:bold;
@@ -39,7 +45,7 @@ export default {
             margin-bottom:30px;
         }
         .masthead {
-            padding: 0px 0 0px;
+            padding:0;
             margin-bottom: 30px;
             margin-top: 30px;
             color: #fff;

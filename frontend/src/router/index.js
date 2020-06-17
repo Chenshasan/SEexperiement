@@ -17,7 +17,7 @@ const routes = [
     component: Result
   },
   {
-    path: '/',
+    path:'/upload',
     name : 'Upload',
     component: Upload
   },

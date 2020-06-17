@@ -7,3 +7,11 @@ export function merge(form) {
     data: form
   });
 }
+
+export function getResult(form) {
+  return request({
+    url: '/upload/merge',
+    method: 'post',
+    data: form
+  });
+}

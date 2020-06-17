@@ -1,16 +1,17 @@
 <template>
-  <div id="app">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+    <div id="app">
+        <div class="container-fluid">
+            <div>
+                <router-view></router-view>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
 export default {
   name: 'App',
   components: {
-    HelloWorld
   }
 }
 </script>
@@ -21,7 +22,15 @@ export default {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+}
+
+.container-fluid{
+    margin-top: 50px;
+    margin-bottom: 50px;
+}
+
+#app{
+    width: 1350px;
+    margin-left: 70px;
 }
 </style>
