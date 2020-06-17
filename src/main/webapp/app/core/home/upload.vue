@@ -14,11 +14,11 @@
         <uploader-unsupport></uploader-unsupport>
         <uploader-drop>
           <uploader-btn style="margin-right:20px;" :attrs="attrs">选择文件</uploader-btn>
-
           <uploader-btn :attrs="attrs" directory>选择文件夹</uploader-btn>
         </uploader-drop>
         <uploader-list></uploader-list>
       </uploader>
+            <router-link id="link" to="/result">已完成文件上传</router-link>
     </div>
     </div>
 </template>
@@ -85,3 +85,9 @@ export default{
 
 }
 </script>
+
+<style>
+    #link{
+        color: rgba(0, 0, 0, 0.99);
+    }
+</style>

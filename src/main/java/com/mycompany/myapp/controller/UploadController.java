@@ -1,7 +1,7 @@
 package com.mycompany.myapp.controller;
 
 import com.mycompany.myapp.service.IUploadService;
-import com.mycompany.myapp.vo.Chunk;
+//import com.mycompany.myapp.vo.Chunk;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
