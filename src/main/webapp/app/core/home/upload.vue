@@ -52,76 +52,75 @@
 </template>
 
 <script>
-    import { merge } from "../api/upload";
+import { merge } from "../api/upload";
 
-    export default{
-        name: "Upload",
-        data() {
-            return {
-                loading:false,
-                panelShow: false, //选择文件后，展示上传panel
-                collapse: false,
-                files: [],
-                uploadOptions1: {
-                    target: "//localhost:8080/upload/single",//上传的接口
-                    testChunks: false, //是否开启服务器分验
-                    fileParameterName: "file",//默认的文件参数名
-                    headers: {},
-                    query() {},
-                    categaryMap: { //用于限制上传的类型
-                        image: ["gif", "jpg", "jpeg", "png", "bmp","cpp"],
-                    }
-                },
-                attrs: {
-                    accept:  ["gif", "jpg", "jpeg", "png", "bmp","cpp"],
-                },
-            }
-        },
-
-        methods: {
-            onFileAdded1(file) {
-                console.log(file);
-            },
-            onFileProgress1() {},
-            onFileSuccess1() {
-            },
-            onFileError1() {
-            },
-            onFileAdded2(file) {
-                console.log(file);
-            },
-            onFileProgress2() {},
-            onFileSuccess2(file, response) {
-                let res = JSON.parse(response);
-                if (res.code == 1) {
-                    return;
-                }
-                if (res.code == 205) {
-                    const formData = new FormData();
-                    formData.append("identifier", file.uniqueIdentifier);
-                    formData.append("filename", file.name);
-                    merge(formData);
-                }
-            },
-            onFileError2(response) {
-                this.$message({
-                    message: response,
-                    type: "error"
-                });
-            },
-            sleep (time) {
-                return new Promise((resolve) => setTimeout(resolve, time));
-            },
-            finish() {
-                this.loading = true;
-                this.sleep(3000).then(() => {
-                    this.$router.push({name: 'Result'})
-                })
-            }
+export default{
+    name: "Upload",
+    data() {
+    return {
+      panelShow: false, //选择文件后，展示上传panel
+      collapse: false,
+      files: [],
+      uploadOptions1: {
+        target: "//localhost:8082/upload/single",//上传的接口
+        testChunks: false, //是否开启服务器分验
+        fileParameterName: "file",//默认的文件参数名
+        headers: {},
+        query() {},
+        categaryMap: { //用于限制上传的类型
+          document: ["gif", "jpg", "jpeg", "png", "bmp","cpp"],
         }
-
-
+      },
+      attrs: {
+      },
     }
+  },
+
+  methods: {
+    onFileAdded1(file) {
+      console.log(file);
+    },
+    onFileProgress1(rootFile, file, chunk) {},
+    onFileSuccess1(rootFile, file, response, chunk) {
+    },
+    onFileError1(rootFile, file, response, chunk) {
+    },
+    onFileAdded2(file) {
+      console.log(file);
+    },
+    onFileProgress2(rootFile, file, chunk) {},
+    onFileSuccess2(rootFile, file, response, chunk) {
+      let res = JSON.parse(response);
+      if (res.code == 1) {
+        return;
+      }
+      if (res.code == 205) {
+        const formData = new FormData();
+        formData.append("identifier", file.uniqueIdentifier);
+        formData.append("filename", file.name);
+        merge(formData).then(response => {});
+      } else {
+      }
+    },
+    onFileError2(rootFile, file, response, chunk) {
+      this.$message({
+        message: response,
+        type: "error"
+      });
+    },
+      sleep (time) {
+          return new Promise((resolve) => setTimeout(resolve, time));
+      },
+      finish() {
+          this.loading = true;
+          this.sleep(3000).then(() => {
+              this.$router.push({name: 'Result'})
+          })
+      }
+  }
+
+
+}
 </script>
 
 <style>

@@ -1,7 +1,7 @@
 package com.mycompany.myapp.controller;
 
 import com.mycompany.myapp.service.IUploadService;
-import com.mycompany.myapp.vo.Chunk;
+//import com.mycompany.myapp.vo.Chunk;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +61,8 @@ public class UploadController {
                 }
                 Path path = Paths.get(SINGLE_FOLDER,temp.getOriginalFilename());
                 Files.write(path, bytes);
+                Path solution_path=Paths.get(SINGLE_FOLDER,temp.getOriginalFilename()+"_solution.txt");
+                Files.write(solution_path,bytes);
             } catch (IOException e) {
                 e.printStackTrace();
             }
