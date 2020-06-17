@@ -6,14 +6,14 @@
 #include "clang/AST/RecursiveASTVisitor.h"
 
 #include "myASTVisitor.h"
-#include "bigVariableChecker.h"
+#include "SpaceChecker.h"
 
-BigVariableChecker::BigVariableChecker()
+SpaceChecker::SpaceChecker()
 {
   if (!of.is_open()) of.open("warn.dat", std::ios::out | std::ios::trunc);
 }
 
-void BigVariableChecker::bigVariableCheck(VarDecl* vd)
+void SpaceChecker::bigVariableCheck(VarDecl* vd)
 {
   SourceLocation beginLoc = vd->getBeginLoc();
   QualType qt = vd->getType();

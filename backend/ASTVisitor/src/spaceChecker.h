@@ -1,3 +1,6 @@
+#ifndef __SPACECHECKER_H__
+#define __SPACECHECKER_H__
+
 #include "clang/AST/Decl.h"
 
 #include "printer.h"
@@ -7,17 +10,19 @@
 using namespace clang;
 using namespace std;
 
-class BigVariableChecker: public Printer
+class SpaceChecker: public Printer
 {
 
 public:
 
-    BigVariableChecker();
+    SpaceChecker();
 
-    BigVariableChecker(const BigVariableChecker& bvc) = delete;
+    SpaceChecker(const SpaceChecker& bvc) = delete;
 
     void bigVariableCheck(VarDecl* vd);
 
 };
 
 double bitToMb(double bits);
+
+#endif
