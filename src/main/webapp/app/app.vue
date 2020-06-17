@@ -1,5 +1,12 @@
 <template>
   <div id="app">
+      <div id="app">
+          <div class="container-fluid">
+              <div>
+                  <router-view></router-view>
+              </div>
+          </div>
+      </div>
 </div>
 </template>
 
@@ -14,8 +21,8 @@
 
     #app{
         width: 1350px;
-        margin-left: 70px;
-        box-shadow: 0 3px 7px rgba(0,0,0,.75), 0 -3px 7px rgba(0,0,0,.2);
+        text-align: center;
+        margin-left: 40px;
     }
 
 </style>
