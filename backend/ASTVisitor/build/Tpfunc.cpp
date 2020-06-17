@@ -6,7 +6,6 @@ void pfree(int *p)
     delete p;
     //delete p;
 }
-
 void pnull(int *a,int *b,int r)
 {
     b=NULL;

@@ -22,12 +22,12 @@
 #include "./pointerChecker/pointerChecker.h"
 #include "./functionChecker/functionChecker.h"
 #include "./SwitchChecker/SwitchChecker.h"
-#include "./bigVariableChecker/BigVariableChecker.h"
+#include "./SpaceChecker/SpaceChecker.h"
 
 using namespace clang;
 using namespace std;
 
-double bitToMb(double bits);
+//double bitToMb(double bits);
 
 SourceManager *SM;
 ASTContext *CTX;
@@ -35,6 +35,7 @@ int ForStmtEndLine = 0;
 int Pointer::numsOfPointer;
 std::string curFuncName;
 std::ofstream printer::of;
+unordered_map<string, EnumDecl*> EDs;
 
 // By implementing RecursiveASTVisitor, we can specify which AST nodes
 // we're interested in by overriding relevant methods.
@@ -136,7 +137,7 @@ public:
         // }
         VarDecl* vd = cast<VarDecl>(dcl);
 
-        bvchecker.bigVariableCheck(vd); // checker
+        spchecker.bigVariableCheck(vd);
 
         QualType qt = vd->getType();
         if (qt->isPointerType())
@@ -442,9 +443,25 @@ public:
     }
     return true;
   }
-  bool VisitSwitchStmt(SwitchStmt *s)
+  bool VisitSwitchStmt(SwitchStmt* s)
   {
-    schecker.typeMismatchCheck(s); // checker
+    if (isa<EnumType>(s->getCond()->IgnoreImpCasts()->getType()))
+    {
+      //cout << s->getCond()->IgnoreImpCasts()->getType().getAsString() << endl;
+      swchecker.enumIncompleteCheck(s);
+    }
+    else
+    {
+      //cout << s->getCond()->IgnoreImpCasts()->getType().getAsString() << endl;
+      swchecker.typeMismatchCheck(s); // checker
+    }
+    return true;
+  }
+
+  bool VisitEnumDecl(EnumDecl* ed)
+  {
+    string enumName = ed->getNameAsString();
+    EDs[enumName] = ed;
     return true;
   }
 
@@ -452,8 +469,8 @@ private:
   Rewriter &TheRewriter;
   PointerChecker pc;
   FuncChecker fc;
-  SwitchChecker schecker;
-  BigVariableChecker bvchecker;
+  SwitchChecker swchecker;
+  SpaceChecker spchecker;
 };
 
 class MyASTConsumer : public ASTConsumer
