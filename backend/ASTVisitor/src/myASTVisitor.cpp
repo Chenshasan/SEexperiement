@@ -32,7 +32,7 @@
 
 #include "pointerChecker.h"
 #include "switchChecker.h"
-#include "SpaceChecker.h"
+#include "spaceChecker.h"
 
 using namespace clang;
 using namespace std;
