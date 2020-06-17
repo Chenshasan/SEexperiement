@@ -7,7 +7,7 @@ export default class Home extends Vue {
   data() {
     return {
       uploadOptions1: {
-        target: '//localhost:8080/upload/single', //上传的接口
+        target: '//localhost:8082/upload/single', //上传的接口
         testChunks: false, //是否开启服务器分片校验
         fileParameterName: 'file', //默认的文件参数名
         headers: {},

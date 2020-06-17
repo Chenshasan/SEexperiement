@@ -13,20 +13,6 @@
 >>>>>>> 7114a920dfef268c1a3443975be16e1d59e8ccc9
             </div>
         </div>
-        <div class="col-md-9">
-            <h5 v-if="username" v-text="$t('home.logged.message', { 'username': username})">欢迎，"{{username}}"</h5>
-
-            <div>
-                <div class="alert alert-warning" v-if="!authenticated">
-                    <span>如果希望使用我们的静态分析工具，您可以</span>
-                    <a class="alert-link" v-on:click="openLogin()" v-text="$t('global.messages.info.authenticated.link')">sign in</a><span v-html="$t('global.messages.info.authenticated.suffix')">, you can try the default accounts:<br/>- Administrator (login="admin" and password="admin") <br/>- User (login="user" and password="user").</span>
-                </div>
-                <div class="alert alert-warning" v-if="!authenticated">
-                    <span v-text="$t('global.messages.info.register.noaccount')">You don't have an account yet?</span>&nbsp;
-                    <router-link class="alert-link" to="/register" v-text="$t('global.messages.info.register.link')">Register a new account</router-link>
-                </div>
-            </div>
-        </div>
     </div>
 </template>
 
@@ -52,8 +38,8 @@
         }
     .masthead {
         padding: 0px 0 0px;
-        margin-bottom: 50px;
-        margin-top: 0px;
+        margin-bottom: 30px;
+        margin-top: 30px;
         color: #fff;
     }
 

@@ -1,8 +1,9 @@
 package com.mycompany.myapp.service.impl;
 
 import com.mycompany.myapp.service.IUploadService;
-import com.mycompany.myapp.vo.Chunk;
+//import com.mycompany.myapp.vo.Chunk;
 import lombok.extern.slf4j.Slf4j;
+import org.h2.mvstore.Chunk;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
