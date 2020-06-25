@@ -1,6 +1,2 @@
-Warning: Deref a null or uninitialized pointer : b  @func: pnull
- ::Tpfunc.cpp:13:11
-Warning: Double free detected : p  @func: main
- ::Tpfunc.cpp:19:5
-Warning: Deref a null or uninitialized pointer : pp  @func: main
- ::Tpfunc.cpp:22:11
+TSlowMem.cpp:17:13:1
+TSlowMem.cpp:19:13:1

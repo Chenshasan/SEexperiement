@@ -70,7 +70,7 @@ BUILDDIR := build
 all:$(BUILDDIR)/myASTVisitor
 	
 
-$(BUILDDIR)/myASTVisitor: $(DIR_SRCS)/myASTVisitor.cpp $(DIR_SRCS)/pointerChecker/pointerChecker.cpp $(DIR_SRCS)/SwitchChecker/SwitchChecker.cpp $(DIR_SRCS)/bigVariableChecker/BigVariableChecker.cpp 
+$(BUILDDIR)/myASTVisitor: $(DIR_SRCS)/myASTVisitor.cpp $(DIR_SRCS)/pointerChecker/pointerChecker.cpp $(DIR_SRCS)/SwitchChecker/SwitchChecker.cpp $(DIR_SRCS)/SpaceChecker/SpaceChecker.cpp 
 	$(CXX) $(CXXFLAGS) $(LLVM_CXXFLAGS) $(CLANG_INCLUDES) $^ \
 		$(CLANG_LIBS) $(LLVM_LDFLAGS) -o $@
 
