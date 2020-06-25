@@ -1,26 +1,35 @@
 #include "pointerChecker.h"
+#include "../common/errNo.h"
 
-int PointerChecker::nullDerefCheck(const Pointer &p2deref)
+int PointerChecker::nullDerefCheck(const Pointer &p2deref, const std::string &locString)
 {
     PIMap *pMap = pIndexMaps[currentFuncName];
     if (pMap->at(p2deref.getid())->getState() != isVALID)
     {
+#ifdef OOP
         std::string msg = "Warning: Deref a null or uninitialized pointer : " + p2deref.getName();
-        msg += "  @func: ";
+        msg += "  @func:";
         msg += getFuncName();
         msg += '\n';
         std::cout << msg;
         pprint(msg);
         return -1;
+#else
+        std::string msg = locString + ':';
+        msg = msg + static_cast<char>('0' + NullDeref) + ':' + p2deref.getName() + '\n';
+        pprint(msg);
+        return -1;
+#endif
     }
     return 1;
 }
-int PointerChecker::freeCheck(const Pointer &p2free)
+int PointerChecker::freeCheck(const Pointer &p2free, const std::string &locString)
 {
     if (p2free.getNew() && p2free.getState() == isVALID)
         return 1;
     else if (p2free.getNew() && p2free.getState() == isFREED)
     {
+#ifdef OOP
         std::string msg = "Warning: Double free detected : " + p2free.getName();
         msg += "  @func: ";
         msg += getFuncName();
@@ -28,15 +37,24 @@ int PointerChecker::freeCheck(const Pointer &p2free)
         std::cout << msg;
         pprint(msg);
         //return -1;
+#else
+        std::string msg = locString + ':' + static_cast<char>('0' + DoubleFree) + ':' + p2free.getName() + '\n';
+        pprint(msg);
+#endif
     }
     else
     {
+#ifdef OOP
         std::string msg = "Warning: Try to free a null ,uninit or a pointer that is not defined by new operator : " + p2free.getName();
         msg += "  @func: ";
         msg += getFuncName();
         msg += '\n';
         std::cout << msg;
         pprint(msg);
+#else
+        std::string msg = locString + ':' + static_cast<char>('0' + DoubleFree) + ':' + p2free.getName() + '\n';
+        pprint(msg);
+#endif
     }
     return -1;
 }
@@ -102,14 +120,14 @@ void PointerChecker::assignPointer(Pointer lhs, const Pointer &rhs)
         exit(-1);
     }
 }
-void PointerChecker::freePointer(const Pointer &p2free, bool &success)
+void PointerChecker::freePointer(const Pointer &p2free, bool &success,const std::string& locString)
 {
     success = false;
     if (UFMapByName.count(currentFuncName) > 0)
     {
         PIMap *pMap = pIndexMaps[currentFuncName];
         UnionFind *UF = UFMapByName.at(currentFuncName);
-        if (freeCheck(p2free) < 0)
+        if (freeCheck(p2free,locString) < 0)
             return;
         else
             for (int i = 0; i < UF_CAPACITY; ++i)

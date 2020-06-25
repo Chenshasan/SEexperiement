@@ -28,13 +28,13 @@ public:
         }
     }
     PointerChecker(const PointerChecker &pc) = delete;
-    int nullDerefCheck(const Pointer &p2deref);
-    int freeCheck(const Pointer &p2free);
+    int nullDerefCheck(const Pointer &p2deref, const std::string &locString);
+    int freeCheck(const Pointer &p2free, const std::string &locString);
     void declPointer(Pointer *p2decl);
     Pointer *getPointerByName(const std::string &s);
     void assignPointer(Pointer lhs, const Pointer &rhs);
-    void freePointer(const Pointer &p2free, bool &success);
-    std::string getFuncName() { return currentFuncName; }
+    void freePointer(const Pointer &p2free, bool &success, const std::string &locString);
+        std::string getFuncName() { return currentFuncName; }
     void stepInFunc(const std::string &funcName);
 
 private:

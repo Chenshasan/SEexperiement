@@ -14,8 +14,8 @@ int main()
             break;
         case GREEN:
             break;
-        case YELLOW:
-            break;
+        //case YELLOW:
+        //    break;
         //default:
         //    break;
     }

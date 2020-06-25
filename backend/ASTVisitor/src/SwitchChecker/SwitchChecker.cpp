@@ -11,6 +11,7 @@
 #include "clang/AST/RecursiveASTVisitor.h"
 
 #include "../myASTVisitor.h"
+#include "../common/errNo.h"
 #include "SwitchChecker.h"
 
 using namespace clang;
@@ -75,11 +76,16 @@ void SwitchChecker::typeMismatchCheck(SwitchStmt* ss)
       SourceLocation beginLoc = cs->getBeginLoc();
       string locString = beginLoc.printToString(*SM);
       stringstream ssr;
+      #ifdef OOP
       cout << locString.c_str() << ':' << ' ' <<
         "warning: there is a mismatch between case type and cond type" << endl;
       ssr << locString.c_str() << ':' << ' ' <<
         "warning: there is a mismatch between case type and cond type" << endl;
       pprint(ssr.str());
+      #else
+      ssr<<locString.c_str() << ':' <<('0'+SwitchMismatch)<<endl;
+      pprint(ssr.str());
+      #endif
     }
   }
 }

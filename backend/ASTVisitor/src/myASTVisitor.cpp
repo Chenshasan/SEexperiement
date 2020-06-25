@@ -35,7 +35,7 @@ int ForStmtEndLine = 0;
 int Pointer::numsOfPointer;
 std::string curFuncName;
 std::ofstream printer::of;
-unordered_map<string, EnumDecl*> EDs;
+unordered_map<string, EnumDecl *> EDs;
 
 // By implementing RecursiveASTVisitor, we can specify which AST nodes
 // we're interested in by overriding relevant methods.
@@ -135,7 +135,7 @@ public:
         //   ssr << "Warning: variable is too big::" << locString.c_str() << ": " << qtstr << ": " << bitToMb(tsize) << "Mb" << endl;
         //   pc.pprint(ssr.str());
         // }
-        VarDecl* vd = cast<VarDecl>(dcl);
+        VarDecl *vd = cast<VarDecl>(dcl);
 
         spchecker.bigVariableCheck(vd);
 
@@ -210,7 +210,7 @@ public:
         else if (fc.isFuncParamFreeByFuncNameAndIndex(funcName, pcount))
         {
           bool success = false;
-          pc.freePointer(*p, success);
+          pc.freePointer(*p, success, pdre->getBeginLoc().printToString(*SM));
           if (!success)
           {
             SourceLocation beginLoc = ce->getBeginLoc();
@@ -229,7 +229,7 @@ public:
   }
   bool VisitCXXNullPtrLiteralExpr(CXXNullPtrLiteralExpr *cnpe)
   {
-    cout << "NULL\n";
+    //cout << "NULL\n";
     return true;
   }
   bool VisitBinaryOperator(BinaryOperator *stmt)
@@ -401,12 +401,14 @@ public:
         std::string pname = dre->getNameInfo().getAsString();
         //if(pc.getFuncName()!="main") return true;
         //cout << "Pnullderef" << pname << '\n';
-        if (pc.nullDerefCheck(*(pc.getPointerByName(pname))) < 0)
+        if (pc.nullDerefCheck(*(pc.getPointerByName(pname)), dre->getBeginLoc().printToString(*SM)) < 0)
         {
+#ifdef OOP
           std::cout << " ::" << beginLocString << '\n';
           stringstream ssr;
           ssr << " ::" << beginLocString << '\n';
           pc.pprint(ssr.str());
+#endif
         }
       }
     }
@@ -425,13 +427,15 @@ public:
     Pointer *p2free = pc.getPointerByName(dre->getNameInfo().getAsString());
     //p2free->dump();
     bool success = false;
-    pc.freePointer(*p2free, success);
+    pc.freePointer(*p2free, success, beginLocString);
     if (!success)
     {
+#ifdef OOP
       std::cout << " ::" << beginLocString << '\n';
       stringstream ssr;
       ssr << " ::" << beginLocString << '\n';
       pc.pprint(ssr.str());
+#endif
     }
     else if (pc.getFuncName() != "main")
     {
@@ -443,7 +447,7 @@ public:
     }
     return true;
   }
-  bool VisitSwitchStmt(SwitchStmt* s)
+  bool VisitSwitchStmt(SwitchStmt *s)
   {
     if (isa<EnumType>(s->getCond()->IgnoreImpCasts()->getType()))
     {
@@ -458,7 +462,7 @@ public:
     return true;
   }
 
-  bool VisitEnumDecl(EnumDecl* ed)
+  bool VisitEnumDecl(EnumDecl *ed)
   {
     string enumName = ed->getNameAsString();
     EDs[enumName] = ed;
