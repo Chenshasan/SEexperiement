@@ -23,6 +23,7 @@
 #include "./functionChecker/functionChecker.h"
 #include "./SwitchChecker/SwitchChecker.h"
 #include "./SpaceChecker/SpaceChecker.h"
+#include "./common/errNo.h"
 
 using namespace clang;
 using namespace std;
@@ -320,19 +321,29 @@ public:
 
     if (lsize <= 2)
     {
+#ifdef OOP
       printf("SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col, ltype.getAsString().c_str(), lsize);
       char tmpwarn[100];
       sprintf(tmpwarn, "SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col, ltype.getAsString().c_str(), lsize);
       std::string tmpwarns(tmpwarn);
       pc.pprint(tmpwarns);
+#else
+      string warns = lhs->getBeginLoc().printToString(*SM) + ':' + static_cast<char>('0' + SlowMemoryOper) + '\n';
+      pc.pprint(warns);
+#endif
     }
     else if (rsize <= 2)
     {
+#ifdef OOP
       printf("SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col, rtype.getAsString().c_str(), rsize);
       char tmpwarn[100];
       sprintf(tmpwarn, "SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col, rtype.getAsString().c_str(), rsize);
       std::string tmpwarns(tmpwarn);
       pc.pprint(tmpwarns);
+#else
+      string warns = rhs->getBeginLoc().printToString(*SM) + ':' + static_cast<char>('0' + SlowMemoryOper) + '\n';
+      pc.pprint(warns);
+#endif
     }
     return true;
   }
