@@ -6,7 +6,7 @@
 #include "clang/AST/RecursiveASTVisitor.h"
 
 #include "myASTVisitor.h"
-#include "SpaceChecker.h"
+#include "spaceChecker.h"
 
 SpaceChecker::SpaceChecker()
 {
@@ -21,17 +21,24 @@ void SpaceChecker::bigVariableCheck(VarDecl* vd)
   if (tsize >=  WARNING_TRIGGER_VARIABLE_SIZE) {
     string qtstr = qt.getAsString();
     string locString = beginLoc.printToString(*SM);
+    stringstream ssr;
+
+#ifdef OOP
     cout << locString.c_str() << ':' << ' ' <<
       "warning: variable" << ' ' <<
       '\'' << qtstr << '\'' << ' ' <<
       '(' << bitToMb(tsize) << "Mb" << ')' << ' ' <<
       "is too big" << endl;
-    stringstream ssr;
     ssr << locString.c_str() << ':' << ' ' <<
       "warning: variable" << ' ' <<
       '\'' << qtstr << '\'' << ' ' <<
       '(' << bitToMb(tsize) << "Mb" << ')' << ' ' <<
       "is too big" << endl;
+#else
+    cout << locString.c_str() << ':' << ('0' + SpaceProblem) << endl;
+    ssr << locString.c_str() << ':' << ('0' + SpaceProblem) << endl;
+#endif
+
     pprint(ssr.str());
   }
 }

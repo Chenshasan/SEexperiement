@@ -75,10 +75,17 @@ void SwitchChecker::typeMismatchCheck(SwitchStmt* ss)
       SourceLocation beginLoc = cs->getBeginLoc();
       string locString = beginLoc.printToString(*SM);
       stringstream ssr;
-      cout << locString.c_str() << ':' << ' ' <<
+
+#ifdef OOP
+      cout << locString.c_str() << ':' <<
         "warning: there is a mismatch between case type and cond type" << endl;
-      ssr << locString.c_str() << ':' << ' ' <<
+      ssr << locString.c_str() << ':' <<
         "warning: there is a mismatch between case type and cond type" << endl;
+#else
+      cout << locString.c_str() << ':' << ('0' + SwitchMismatch) << endl;
+      ssr << locString.c_str() << ':' << ('0' + SwitchMismatch) << endl;  
+#endif
+
       pprint(ssr.str());
     }
   }
@@ -140,19 +147,24 @@ void SwitchChecker::enumIncompleteCheck(SwitchStmt* ss)
   
   if (!warn_elems.empty())
   {
+
+#ifdef OOP
+
     if (warn_elems.size() < 4)
     {
       assert(warn_elems.size() >= 1);
 
-      cout << locString.c_str() << ':' << ' ' <<
+      cout << locString.c_str() << ':' <<
         "warning: enumeration value";
-      ssr << locString.c_str() << ':' << ' ' <<
+      ssr << locString.c_str() << ':' <<
         "warning: enumeration value";
       if (warn_elems.size() > 1)
       {
-        cout << 's' << ' ';
-        ssr << 's' << ' ';
+        cout << 's';
+        ssr << 's';
       }
+      cout << ' ';
+      ssr << ' ';
 
       if (warn_elems.size() == 3)
       {
@@ -186,16 +198,26 @@ void SwitchChecker::enumIncompleteCheck(SwitchStmt* ss)
       ssr << '\'' << warn_elems[2] << '\'' << "..." << endl;
     }
 
+#else
+    cout << locString.c_str() << ':' << ('0' + SwitchMismatch) << endl;
+    ssr << locString.c_str() << ':' << ('0' + SwitchMismatch) << endl;
+#endif
+
     pprint(ssr.str());
   }
 
   warningLoc = ss->getEndLoc();
   locString = warningLoc.printToString(*SM);
 
+#ifdef OOP
   cout << locString.c_str() << ':' << ' ' <<
     "warning: there is no \'default\' statement" << endl;
   ssr << locString.c_str() << ':' << ' ' <<
     "warning: there is no \'default\' statement" << endl;
+#else
+  cout << locString.c_str() << ':' << ('0' + SwitchMismatch) << endl;
+  ssr << locString.c_str() << ':' << ('0' + SwitchMismatch) << endl;
+#endif
   pprint(ssr.str());
 
 }
