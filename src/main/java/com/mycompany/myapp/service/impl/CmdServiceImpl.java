@@ -91,6 +91,9 @@ public class CmdServiceImpl {
             BufferedReader br = new BufferedReader(new InputStreamReader(stdout,charset));
             String line=null;
             while((line=br.readLine()) != null){
+                if(line.startsWith("./ASTVisitor")){
+                    line=line.substring(19);
+                }
                 buffer.append(line+"\n");
             }
         } catch (UnsupportedEncodingException e) {

@@ -3,6 +3,7 @@ package com.mycompany.myapp.controller;
 import com.mycompany.myapp.service.IUploadService;
 //import com.mycompany.myapp.vo.Chunk;
 import com.mycompany.myapp.service.impl.CmdServiceImpl;
+import com.mycompany.myapp.vo.RecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -54,10 +56,11 @@ public class UploadController {
 
     @ResponseBody
     @RequestMapping("/single")
-    public void uploadCategory(HttpServletRequest request,
-                               @RequestParam("file") MultipartFile[] file){
+    public RecordVO uploadCategory(HttpServletRequest request,
+                                   @RequestParam("file") MultipartFile[] file){
     Path path=null;
     String name="Tmaybe2free.cpp";
+    String content="";
     if (file != null && file.length > 0) {
         for (MultipartFile temp : file) {
             try {
@@ -68,6 +71,8 @@ public class UploadController {
                 path = Paths.get(SINGLE_FOLDER,temp.getOriginalFilename());
                 name=temp.getOriginalFilename();
                 Files.write(path, bytes);
+                //System.out.println(new String(bytes));
+                content=new String(bytes);
                 Path solution_path=Paths.get(SINGLE_FOLDER,temp.getOriginalFilename()+"_solution.txt");
                 Files.write(solution_path,bytes);
             } catch (IOException e) {
@@ -80,6 +85,11 @@ public class UploadController {
     CmdServiceImpl.putFile(CmdServiceImpl.login("114.212.84.169","hsl","123qwe"),f,"/home/hsl/ASTVisitor/build");
     out=CmdServiceImpl.execute(CmdServiceImpl.login("114.212.84.169","hsl","123qwe"),"./ASTVisitor/build/myASTVisitor ./ASTVisitor/build/"+name);
     System.out.print(out);
+
+    RecordVO recordVO=new RecordVO();
+    recordVO.setContent(content);
+    recordVO.setWarning(out);
+    return recordVO;
     }
 
 
