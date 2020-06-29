@@ -9,16 +9,17 @@
         <div class="jumbotron1 masthead1">
             <div class="container">
                 <h2>数组越界</h2>
-                <pre>
-while(!(mywidth&(1u"lt""lt"(mybits-1)))) {
+
+                <pre v-highlightjs=codeDate ><code class="c++">
+while(!(mywidth&(1u << (mybits-1)))) {
     mybits--;//find highest bit of 1 in mywidth
-    cout "lt""lt" hex "lt""lt" mybits "lt""lt" endl;
+    cout<< hex << mybits << endl;
     if(!mybits)
         break;
 }
-cout "lt""lt" hex "lt""lt" mybits "lt""lt" endl;
+cout << hex << mybits << endl;
 pause();
-                </pre>
+                </code></pre>
                 <hr>
             </div>
         </div>
@@ -26,17 +27,46 @@ pause();
 </template>
 
 <script>
+    import $ from 'jquery'
     export default {
-        name: "Result"
+        name: "Result",
+        mounted() {
+            $("code").each(function(){
+                $(this).html("<ol><li>" + $(this).html().replace(/\n/g,"\n</li><li>") +"\n</li></ol>");
+            });
+        }
     }
 </script>
 
 <style scoped>
     #result{
         box-shadow: 0 3px 7px rgba(0,0,0,.75), 0 -3px 7px rgba(0,0,0,.2);
-        padding: 40px 30px 20px 30px;
+        padding: 35px 30px 20px 30px;
     }
 
+    .hljs {
+        border: 0;
+        font-size: 12px;
+        display: block;
+        padding: 1px;
+        margin: 0;
+        width: 100%;
+        font-weight: 200;
+        color: #333;
+        white-space: pre-wrap
+    }
+    .hljs ol {
+        list-style: decimal;
+        margin: 0px 0px 0 40px !important;
+        padding: 0px;
+    }
+    .hljs ol li {
+        list-style: decimal-leading-zero;
+        border-left: 1px solid #ddd !important;
+        padding: 5px!important;
+        margin: 0 !important;
+        white-space: pre;
+    }
 
 
     .masthead h1 {

@@ -6,11 +6,7 @@
                 <h2>简洁、直观的静态分析工具，让代码更安全、简单。</h2>
                 <h5>当前版本： v1.0.0 | 文档更新于：2020-04-25</h5>
                 <hr>
-<<<<<<< HEAD
-                <a class="btn btn-outline-inverse btn-lg" v-on:click="jump()" target="_blank">点击开始进入静态分析之旅</a>
-=======
                 <router-link class="btn btn-lg" to="/upload">点击开始进入静态分析之旅</router-link>
->>>>>>> 7114a920dfef268c1a3443975be16e1d59e8ccc9
             </div>
         </div>
     </div>
@@ -20,11 +16,10 @@
 
 </script>
 
-<style>
-    @media screen and (min-width: 768px){
+<style scoped>
         #wrapper{
             box-shadow: 0 3px 7px rgba(0,0,0,.75), 0 -3px 7px rgba(0,0,0,.2);
-            padding: 20px 30px;
+            padding: 15px 40px;
         }
 
         .masthead h1 {
@@ -33,14 +28,17 @@
             margin-bottom: 30px;
             color:#ffffff;
         }
+
         .btn{
             color: #ffffff;
         }
+
         .masthead h2 {
             color:#ffffff;
             font-weight:normal;
             margin-bottom:30px;
         }
+
         .masthead {
             padding:0;
             margin-bottom: 30px;
@@ -50,7 +48,7 @@
 
         .jumbotron {
             position: relative;
-            padding: 200px 200px;
+            padding: 180px 180px;
             color: #fff;
             text-align: center;
             text-shadow: 0 1px 3px rgba(0,0,0,.4), 0 0 30px rgba(0,0,0,.075);
@@ -59,5 +57,4 @@
             filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#020031",endColorstr="#6d3353",GradientType=1);
             box-shadow: inset 0 3px 7px rgba(255,255,255,.75), inset 0 -3px 7px rgba(255,255,255,.2);
         }
-    }
 </style>

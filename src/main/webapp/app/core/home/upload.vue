@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div style="height: 100%">
         <div id="wrapper" v-if="!this.loading">
             <div class="uploadDiv1">
                 <uploader
@@ -45,7 +45,7 @@
                         <div class="circle4"></div>
                     </div>
                 </div>
-                <h3 style="margin-top: 50px;font-size: 40px;font-weight: bold">Loading stuff...</h3>
+                <h3 style="margin-top: 50px;font-size: 40px;font-weight: bold;">Loading stuff...</h3>
             </div>
         </div>
     </div>
@@ -58,6 +58,7 @@ export default{
     name: "Upload",
     data() {
     return {
+        loading:false,
       panelShow: false, //选择文件后，展示上传panel
       collapse: false,
       files: [],
@@ -123,7 +124,7 @@ export default{
 }
 </script>
 
-<style>
+<style scoped>
     #wrapper{
         box-shadow: 0 3px 7px rgba(0,0,0,.75), 0 -3px 7px rgba(0,0,0,.2);
         padding: 100px 30px;
@@ -132,15 +133,13 @@ export default{
 
     #wrapper1{
         width: 100%;
-        height: 750px;
+        height: 100%;
         box-shadow: 0 3px 7px rgba(0,0,0,.75), 0 -3px 7px rgba(0,0,0,.2);
-        padding: 30px 35px;
+        padding: 40px 40px 15px;
     }
 
     .jumbotron {
-        position: relative;
-        padding: 200px 200px;
-        height: 100%;
+        padding: 215px 215px;
         color: #fff;
         text-align: center;
         text-shadow: 0 1px 3px rgba(0,0,0,.4), 0 0 30px rgba(0,0,0,.075);
