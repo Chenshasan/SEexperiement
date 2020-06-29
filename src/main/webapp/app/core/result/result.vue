@@ -11,14 +11,7 @@
                 <h2>数组越界</h2>
 
                 <pre v-highlightjs=codeDate ><code class="c++">
-while(!(mywidth&(1u << (mybits-1)))) {
-    mybits--;//find highest bit of 1 in mywidth
-    cout<< hex << mybits << endl;
-    if(!mybits)
-        break;
-}
-cout << hex << mybits << endl;
-pause();
+{{this.codeContent}}
                 </code></pre>
                 <hr>
             </div>
@@ -28,13 +21,33 @@ pause();
 
 <script>
     import $ from 'jquery'
+
     export default {
         name: "Result",
+        data() {
+            return{
+                codeContent:'',
+                warningList:[],
+                warn:'',
+                index:0,
+            }
+        },
+        created(){
+            this.codeContent=this.$store.getters.content
+            this.warningList=this.$store.getters.warning.split("\n")
+            console.log(this.warningList)
+        },
         mounted() {
             $("code").each(function(){
-                $(this).html("<ol><li>" + $(this).html().replace(/\n/g,"\n</li><li>") +"\n</li></ol>");
+                $(this).html("<ol>" + $(this).html().replace(/\n/g,"\n</li><li>") +"\n</ol>");
             });
-        }
+            let i=0
+            for(i=0;i<this.warningList.length;i++){
+                this.warn=this.warningList[i].split(":")
+                this.index=parseInt(this.warn[1])
+                $("li:nth-child("+this.index+")").css({"background-color":"#dbe2ef"});
+            }
+    }
     }
 </script>
 

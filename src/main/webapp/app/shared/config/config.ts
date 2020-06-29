@@ -47,6 +47,7 @@ import * as filters from '@/shared/date/filters';
 import { accountStore } from '@/shared/config/store/account-store';
 import { alertStore } from '@/shared/config/store/alert-store';
 import { translationStore } from '@/shared/config/store/translation-store';
+import { fileStore } from '@/shared/config/store/file-store';
 
 const dateTimeFormats = {
   'zh-cn': {
@@ -139,7 +140,8 @@ export function initVueXStore(vue) {
     modules: {
       accountStore,
       alertStore,
-      translationStore
+      translationStore,
+      fileStore
     }
   });
 }

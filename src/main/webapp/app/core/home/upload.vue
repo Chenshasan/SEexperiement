@@ -53,6 +53,7 @@
 
 <script>
 import { merge } from "../api/upload";
+import { Store } from 'vuex';
 
 export default{
     name: "Upload",
@@ -85,6 +86,8 @@ export default{
     onFileSuccess1(rootFile, file, response, chunk) {
         let res = JSON.parse(response);
         console.log(res)
+        this.$store.commit('setPassage',res.content)
+        this.$store.commit('setWarning',res.warning)
     },
     onFileError1(rootFile, file, response, chunk) {
     },
