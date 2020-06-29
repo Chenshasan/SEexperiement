@@ -1,9 +1,9 @@
 #pragma once
 #include <fstream>
-class Printer
+class printer
 {
 public:
-    Printer()
+    printer()
     {
     }
     void pprint(const std::string &s)

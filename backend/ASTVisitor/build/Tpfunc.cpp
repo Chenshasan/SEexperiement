@@ -2,30 +2,17 @@
 #define NULL 0
 void pfree(int *p)
 {
-    //int* a=new int(1);
     delete p;
-    //delete p;
 }
-
-void pnull(int *a,int *b,int r)
+void pnull(int *p,int* q)
 {
-    b=NULL;
-    int i=*b;
+    q=NULL;
+    int r=*q;
 }
 int main()
 {
-    int* p=new int(9);
-    pfree(p);
-    delete p;
-    int *pp=new int(1);
-    pnull(p,pp,1);
-    int r=*pp;
+    int* p1=new int(9);
+    pfree(p1);
+    delete p1;
     return 0;
 }
-// int main()
-// {
-//     int *p;
-//     p = nullptr;
-//     int a=*p;
-//     return 0;
-// }

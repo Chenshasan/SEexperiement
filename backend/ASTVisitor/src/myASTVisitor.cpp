@@ -2,7 +2,6 @@
 #include <sstream>
 #include <string>
 #include <iostream>
-#include <unordered_map>
 
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/RecursiveASTVisitor.h"
@@ -20,14 +19,16 @@
 #include "llvm/Support/raw_ostream.h"
 #include "clang-c/Index.h"
 
-
 #include "./pointerChecker/pointerChecker.h"
 #include "./functionChecker/functionChecker.h"
 #include "./SwitchChecker/SwitchChecker.h"
-
+#include "./SpaceChecker/SpaceChecker.h"
+#include "./common/errNo.h"
 
 using namespace clang;
 using namespace std;
+
+//double bitToMb(double bits);
 
 SourceManager *SM;
 ASTContext *CTX;
@@ -35,8 +36,7 @@ int ForStmtEndLine = 0;
 int Pointer::numsOfPointer;
 std::string curFuncName;
 std::ofstream printer::of;
-
-unordered_map<string, EnumDecl*> EDs;
+unordered_map<string, EnumDecl *> EDs;
 
 // By implementing RecursiveASTVisitor, we can specify which AST nodes
 // we're interested in by overriding relevant methods.
@@ -136,9 +136,9 @@ public:
         //   ssr << "Warning: variable is too big::" << locString.c_str() << ": " << qtstr << ": " << bitToMb(tsize) << "Mb" << endl;
         //   pc.pprint(ssr.str());
         // }
-        VarDecl* vd = cast<VarDecl>(dcl);
+        VarDecl *vd = cast<VarDecl>(dcl);
 
-        space_checker.bigVariableCheck(vd); // checker
+        spchecker.bigVariableCheck(vd);
 
         QualType qt = vd->getType();
         if (qt->isPointerType())
@@ -211,7 +211,7 @@ public:
         else if (fc.isFuncParamFreeByFuncNameAndIndex(funcName, pcount))
         {
           bool success = false;
-          pc.freePointer(*p, success);
+          pc.freePointer(*p, success, pdre->getBeginLoc().printToString(*SM));
           if (!success)
           {
             SourceLocation beginLoc = ce->getBeginLoc();
@@ -230,7 +230,7 @@ public:
   }
   bool VisitCXXNullPtrLiteralExpr(CXXNullPtrLiteralExpr *cnpe)
   {
-    cout << "NULL\n";
+    //cout << "NULL\n";
     return true;
   }
   bool VisitBinaryOperator(BinaryOperator *stmt)
@@ -321,19 +321,29 @@ public:
 
     if (lsize <= 2)
     {
+#ifdef OOP
       printf("SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col, ltype.getAsString().c_str(), lsize);
       char tmpwarn[100];
       sprintf(tmpwarn, "SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col, ltype.getAsString().c_str(), lsize);
       std::string tmpwarns(tmpwarn);
       pc.pprint(tmpwarns);
+#else
+      string warns = lhs->getBeginLoc().printToString(*SM) + ':' + static_cast<char>('0' + SlowMemoryOper) + '\n';
+      pc.pprint(warns);
+#endif
     }
     else if (rsize <= 2)
     {
+#ifdef OOP
       printf("SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col, rtype.getAsString().c_str(), rsize);
       char tmpwarn[100];
       sprintf(tmpwarn, "SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col, rtype.getAsString().c_str(), rsize);
       std::string tmpwarns(tmpwarn);
       pc.pprint(tmpwarns);
+#else
+      string warns = rhs->getBeginLoc().printToString(*SM) + ':' + static_cast<char>('0' + SlowMemoryOper) + '\n';
+      pc.pprint(warns);
+#endif
     }
     return true;
   }
@@ -388,7 +398,6 @@ public:
     }
     return true;
   }
-
   bool VisitUnaryOperator(UnaryOperator *u)
   {
     SourceLocation beginLoc = u->getBeginLoc();
@@ -403,19 +412,20 @@ public:
         std::string pname = dre->getNameInfo().getAsString();
         //if(pc.getFuncName()!="main") return true;
         //cout << "Pnullderef" << pname << '\n';
-        if (pc.nullDerefCheck(*(pc.getPointerByName(pname))) < 0)
+        if (pc.nullDerefCheck(*(pc.getPointerByName(pname)), dre->getBeginLoc().printToString(*SM)) < 0)
         {
+#ifdef OOP
           std::cout << " ::" << beginLocString << '\n';
           stringstream ssr;
           ssr << " ::" << beginLocString << '\n';
           pc.pprint(ssr.str());
+#endif
         }
       }
     }
     //std::cout<<u->getOpcodeStr(u->getOpcode()).str()<<'\n';
     return true;
   }
-
   bool VisitCXXDeleteExpr(CXXDeleteExpr *cde)
   {
     //std::cout<<"CXXDEL"<<'\n';
@@ -428,13 +438,15 @@ public:
     Pointer *p2free = pc.getPointerByName(dre->getNameInfo().getAsString());
     //p2free->dump();
     bool success = false;
-    pc.freePointer(*p2free, success);
+    pc.freePointer(*p2free, success, beginLocString);
     if (!success)
     {
+#ifdef OOP
       std::cout << " ::" << beginLocString << '\n';
       stringstream ssr;
       ssr << " ::" << beginLocString << '\n';
       pc.pprint(ssr.str());
+#endif
     }
     else if (pc.getFuncName() != "main")
     {
@@ -451,17 +463,17 @@ public:
     if (isa<EnumType>(s->getCond()->IgnoreImpCasts()->getType()))
     {
       //cout << s->getCond()->IgnoreImpCasts()->getType().getAsString() << endl;
-      switch_checker.enumIncompleteCheck(s);
+      swchecker.enumIncompleteCheck(s);
     }
     else
     {
       //cout << s->getCond()->IgnoreImpCasts()->getType().getAsString() << endl;
-      switch_checker.typeMismatchCheck(s); // checker
+      swchecker.typeMismatchCheck(s); // checker
     }
     return true;
   }
 
-  bool VisitEnumDecl(EnumDecl* ed)
+  bool VisitEnumDecl(EnumDecl *ed)
   {
     string enumName = ed->getNameAsString();
     EDs[enumName] = ed;
@@ -471,11 +483,9 @@ public:
 private:
   Rewriter &TheRewriter;
   PointerChecker pc;
-
   FuncChecker fc;
-  SwitchChecker schecker;
-  BigVariableChecker bvchecker;
-
+  SwitchChecker swchecker;
+  SpaceChecker spchecker;
 };
 
 class MyASTConsumer : public ASTConsumer
@@ -530,13 +540,6 @@ int main(int argc, char *argv[])
 
   // Set the main file
   const FileEntry *FileIn = FileMgr.getFile(argv[1]);
-
-  if (!FileIn)
-  {
-    cout << "Src file can't be found" << endl;
-    return 1;
-  }
-
   SourceMgr.setMainFileID(
       SourceMgr.createFileID(FileIn, SourceLocation(), SrcMgr::C_User));
   TheCompInst.getDiagnosticClient().BeginSourceFile(

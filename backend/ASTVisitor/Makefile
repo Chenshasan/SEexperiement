@@ -1,4 +1,4 @@
-LLVM_SRC_PATH := /home/hsl/llvm/include
+LLVM_SRC_PATH := /home/calvinliu/Desktop/llvm/include
 
 # LLVM_BUILD_PATH is the directory in which you built LLVM - where you ran
 # configure or cmake.
@@ -7,7 +7,7 @@ LLVM_SRC_PATH := /home/hsl/llvm/include
 # process. It should contain the tools like opt, llc and clang. The default
 # reflects a release build with CMake and Ninja. binary build of LLVM, point it
 # to the bin/ directory.
-LLVM_BUILD_PATH := /home/hsl/llvm
+LLVM_BUILD_PATH := /home/calvinliu/Desktop/llvm
 LLVM_BIN_PATH 	:= $(LLVM_BUILD_PATH)/bin
 
 $(info -----------------------------------------------)
@@ -16,7 +16,7 @@ $(info Using LLVM_BUILD_PATH = $(LLVM_BUILD_PATH))
 $(info Using LLVM_BIN_PATH = $(LLVM_BIN_PATH))
 $(info -----------------------------------------------)
 
-CXX := /home/hsl/llvm/bin/clang++
+CXX := /home/calvinliu/Desktop/llvm/bin/clang++
 CXXFLAGS := -fno-rtti -O0 -g
 PLUGIN_CXXFLAGS := -fpic
 
@@ -70,6 +70,7 @@ BUILDDIR := build
 all:$(BUILDDIR)/myASTVisitor
 	
 
-$(BUILDDIR)/myASTVisitor: $(DIR_SRCS)/myASTVisitor.cpp $(DIR_SRCS)/pointerChecker/pointerChecker.cpp $(DIR_SRCS)/SwitchChecker/SwitchChecker.cpp $(DIR_SRCS)/bigVariableChecker/BigVariableChecker.cpp 
+$(BUILDDIR)/myASTVisitor: $(DIR_SRCS)/myASTVisitor.cpp $(DIR_SRCS)/pointerChecker/pointerChecker.cpp $(DIR_SRCS)/SwitchChecker/SwitchChecker.cpp $(DIR_SRCS)/SpaceChecker/SpaceChecker.cpp 
 	$(CXX) $(CXXFLAGS) $(LLVM_CXXFLAGS) $(CLANG_INCLUDES) $^ \
 		$(CLANG_LIBS) $(LLVM_LDFLAGS) -o $@
+
