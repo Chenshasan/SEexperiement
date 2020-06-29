@@ -83,6 +83,8 @@ export default{
     },
     onFileProgress1(rootFile, file, chunk) {},
     onFileSuccess1(rootFile, file, response, chunk) {
+        let res = JSON.parse(response);
+        console.log(res)
     },
     onFileError1(rootFile, file, response, chunk) {
     },
