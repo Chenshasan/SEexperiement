@@ -63,8 +63,10 @@ public class CmdServiceImpl {
                 if(StringUtils.isBlank(result)){
                     log.info("得到标准输出为空,链接conn:"+conn+",执行的命令："+cmd);
                     result=processStdout(session.getStderr(),DEFAULTCHART);
+                    //getFile(conn,"E:/","/home/hsl/ASTVisitor/build/warn.dat");
                 }else{
                     log.info("执行命令成功,链接conn:"+conn+",执行的命令："+cmd);
+                    //getFile(conn,"E:/","/home/hsl/ASTVisitor/build/warn.dat");
                 }
                 conn.close();
                 session.close();
@@ -112,5 +114,14 @@ public class CmdServiceImpl {
         }
     }
 
-
+    public static void getFile(Connection conn, String local, String remotePath){
+        SCPClient sc = new SCPClient(conn);
+        try {
+            //将本地文件放到远程服务器指定目录下，默认的文件模式为 0600，即 rw，
+            //如要更改模式，可调用方法 put(fileName, remotePath, mode),模式须是4位数字且以0开头
+            sc.get(remotePath, local);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

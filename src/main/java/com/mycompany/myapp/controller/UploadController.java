@@ -56,6 +56,8 @@ public class UploadController {
     @RequestMapping("/single")
     public void uploadCategory(HttpServletRequest request,
                                @RequestParam("file") MultipartFile[] file){
+    Path path=null;
+    String name="Tmaybe2free.cpp";
     if (file != null && file.length > 0) {
         for (MultipartFile temp : file) {
             try {
@@ -63,7 +65,8 @@ public class UploadController {
                 if (!Files.isWritable(Paths.get(SINGLE_FOLDER))) {
                     Files.createDirectories(Paths.get(SINGLE_FOLDER));
                 }
-                Path path = Paths.get(SINGLE_FOLDER,temp.getOriginalFilename());
+                path = Paths.get(SINGLE_FOLDER,temp.getOriginalFilename());
+                name=temp.getOriginalFilename();
                 Files.write(path, bytes);
                 Path solution_path=Paths.get(SINGLE_FOLDER,temp.getOriginalFilename()+"_solution.txt");
                 Files.write(solution_path,bytes);
@@ -72,9 +75,10 @@ public class UploadController {
             }
             }
         }
+    String f=String.valueOf(path);
     String out="yyy";
-    out=CmdServiceImpl.execute(CmdServiceImpl.login("114.212.84.169","hsl","123qwe"),"./ASTVisitor/build/myASTVisitor ./ASTVisitor/build/Tpfunc.cpp");
-    CmdServiceImpl.putFile(CmdServiceImpl.login("114.212.84.169","hsl","123qwe"),"E:\\work\\resource\\post-bg-swift2.jpg","/home/hsl");
+    CmdServiceImpl.putFile(CmdServiceImpl.login("114.212.84.169","hsl","123qwe"),f,"/home/hsl/ASTVisitor/build");
+    out=CmdServiceImpl.execute(CmdServiceImpl.login("114.212.84.169","hsl","123qwe"),"./ASTVisitor/build/myASTVisitor ./ASTVisitor/build/"+name);
     System.out.print(out);
     }
 

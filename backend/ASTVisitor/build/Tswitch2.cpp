@@ -1,21 +1,24 @@
+#include <iostream>
 enum Color
 {
-    RED, BLUE, GREEN, YELLOW
+    RED,BLUE,GREEN,YELLOW
 };
 int main()
 {
-    Color color = RED;
-    switch (color)
+    Color c=RED;
+    switch(c)
     {
-    case RED:
-        break;
-    case BLUE:
-        break;
-    case GREEN:
-        break;
-    case YELLOW:
-        break;
-    default:
-        break;
+        case RED:
+            break;
+        case BLUE:
+            break;
+        case GREEN:
+            break;
+        //case YELLOW:
+        //    break;
+        //default:
+        //    break;
     }
+
+    return 0;
 }
