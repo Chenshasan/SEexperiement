@@ -2,6 +2,7 @@ package com.mycompany.myapp.controller;
 
 import com.mycompany.myapp.service.IUploadService;
 //import com.mycompany.myapp.vo.Chunk;
+import com.mycompany.myapp.service.impl.CmdServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,9 @@ public class UploadController {
 
     @Autowired
     private IUploadService uploadService;
+//    @Autowired
+//    private CmdService cmdService;
+
 
 //    @PostMapping("single")
 //    public void singleUpload(Chunk chunk) {
@@ -68,6 +72,10 @@ public class UploadController {
             }
             }
         }
+    String out="yyy";
+    out=CmdServiceImpl.execute(CmdServiceImpl.login("114.212.84.169","hsl","123qwe"),"./ASTVisitor/build/myASTVisitor ./ASTVisitor/build/Tpfunc.cpp");
+    CmdServiceImpl.putFile(CmdServiceImpl.login("114.212.84.169","hsl","123qwe"),"E:\\work\\resource\\post-bg-swift2.jpg","/home/hsl");
+    System.out.print(out);
     }
 
 

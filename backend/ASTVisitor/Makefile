@@ -1,4 +1,4 @@
-LLVM_SRC_PATH := E:/LLVM/include
+LLVM_SRC_PATH := /home/hsl/llvm/include
 
 # LLVM_BUILD_PATH is the directory in which you built LLVM - where you ran
 # configure or cmake.
@@ -7,7 +7,7 @@ LLVM_SRC_PATH := E:/LLVM/include
 # process. It should contain the tools like opt, llc and clang. The default
 # reflects a release build with CMake and Ninja. binary build of LLVM, point it
 # to the bin/ directory.
-LLVM_BUILD_PATH := E:/work/LLVM/build/Debug
+LLVM_BUILD_PATH := /home/hsl/llvm
 LLVM_BIN_PATH 	:= $(LLVM_BUILD_PATH)/bin
 
 $(info -----------------------------------------------)
@@ -16,8 +16,7 @@ $(info Using LLVM_BUILD_PATH = $(LLVM_BUILD_PATH))
 $(info Using LLVM_BIN_PATH = $(LLVM_BIN_PATH))
 $(info -----------------------------------------------)
 
-CXXFILES := *.cpp
-CXX := E:\work\LLVM\build\Debug/bin/clang++
+CXX := /home/hsl/llvm/bin/clang++
 CXXFLAGS := -fno-rtti -O0 -g
 PLUGIN_CXXFLAGS := -fpic
 
