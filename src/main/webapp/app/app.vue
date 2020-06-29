@@ -1,28 +1,20 @@
 <template>
   <div id="app">
-      <div id="app">
-          <div class="container-fluid">
-              <div>
-                  <router-view></router-view>
-              </div>
-          </div>
-      </div>
-</div>
+      <router-view></router-view>
+  </div>
 </template>
 
 <script lang="ts" src="./app.component.ts">
 </script>
 
 <style>
-    .container-fluid{
-        margin-top: 50px;
-        margin-bottom: 50px;
-    }
-
     #app{
-        width: 1350px;
+        width: 100%;
         text-align: center;
-        margin-left: 40px;
+        padding-left: 70px;
+        padding-right: 70px;
+        padding-top: 30px;
+
     }
 
 </style>

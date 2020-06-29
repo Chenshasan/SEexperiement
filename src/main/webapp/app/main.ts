@@ -27,6 +27,8 @@ import '../content/scss/vendor.scss';
 import AlertService from '@/shared/alert/alert.service';
 import TranslationService from '@/locale/translation.service';
 import ConfigurationService from '@/admin/configuration/configuration.service';
+import VueHighlightJS from 'vue-highlightjs';
+import 'highlight.js/styles/atom-one-light.css';
 
 /* tslint:disable */
 
@@ -39,6 +41,7 @@ config.initFortAwesome(Vue);
 bootstrapVueConfig.initBootstrapVue(Vue);
 Vue.use(Vue2Filters);
 Vue.use(uploader);
+Vue.use(VueHighlightJS);
 Vue.component('font-awesome-icon', FontAwesomeIcon);
 Vue.component('jhi-item-count', JhiItemCountComponent);
 Vue.component('jhi-sort-indicator', JhiSortIndicatorComponent);
