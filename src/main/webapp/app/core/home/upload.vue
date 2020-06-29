@@ -58,7 +58,7 @@ export default{
     name: "Upload",
     data() {
     return {
-        loading:false,
+      loading:false,
       panelShow: false, //选择文件后，展示上传panel
       collapse: false,
       files: [],

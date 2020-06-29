@@ -93,6 +93,35 @@ public class CmdServiceImpl {
             while((line=br.readLine()) != null){
                 if(line.startsWith("./ASTVisitor")){
                     line=line.substring(19);
+                    int pos=Integer.parseInt(line.split(":")[3]);
+                    String error_info="";
+                    String extra_info="";
+                    switch (pos){
+                        case 0:
+                            error_info="数组越界";
+                            break;
+                        case 1:
+                            error_info="慢速内存操作";
+                            break;
+                        case 2:
+                            error_info="类型不匹配";
+                            break;
+                        case 3:
+                            error_info="大型变量";
+                            extra_info="大小--"+line.split(":")[4]+"MB";
+                            break;
+                        case 4:
+                            error_info="空指针";
+                            extra_info="指针名--"+line.split(":")[4];
+                            break;
+                        case 5:
+                            error_info="double free";
+                            extra_info="指针名--"+line.split(":")[4];
+                    }
+                    String sp []=line.split(":");
+                    sp[3]=error_info;
+                    if(pos>=3) sp[4]=extra_info;
+                    line=String.join(":",sp);
                 }
                 buffer.append(line+"\n");
             }
