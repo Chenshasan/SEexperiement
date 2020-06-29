@@ -19,7 +19,7 @@ public class jna {
         int inc(int a);
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void jna(String[] args) throws IOException {
         //Process process =Runtime.getRuntime().exec("E:\\work\\resource\\JNAtest\\src\\main\\java\\Hello.exe");
         try {
             Process pr  = Runtime.getRuntime().exec("E:\\work\\resource\\JNAtest\\src\\main\\java\\Hello.exe");//之用Rumtime执行一个cmd命令，返回一个Process对象

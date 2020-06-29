@@ -8,16 +8,19 @@
         </div>
         <div class="jumbotron1 masthead1">
             <div class="container">
-                <h2>数组越界</h2>
+                <h2>数组越界 line11</h2>
                 <pre>
-while(!(mywidth&(1u"lt""lt"(mybits-1)))) {
-    mybits--;//find highest bit of 1 in mywidth
-    cout "lt""lt" hex "lt""lt" mybits "lt""lt" endl;
-    if(!mybits)
-        break;
-}
-cout "lt""lt" hex "lt""lt" mybits "lt""lt" endl;
-pause();
+                using namespace std;
+                #define mc memcpy
+                int main()
+                {
+                    int a[10000];
+                    int b[10000];
+                    for(int i=0;i<10000;i++) a[i]=rand();    
+                    //
+                    a[10001]+=1;    //error：数组越界
+                    return 0;
+                }
                 </pre>
                 <hr>
             </div>
