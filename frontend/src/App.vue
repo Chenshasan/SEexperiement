@@ -31,6 +31,5 @@ export default {
 
 #app{
     width: 1350px;
-    margin-left: 70px;
 }
 </style>
