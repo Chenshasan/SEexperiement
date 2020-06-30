@@ -70,6 +70,7 @@ public class UploadController {
             recVO.setId(record.getId());
             recVO.setUserId(record.getUserId());
             recVO.setWarning(record.getWarning());
+            recVO.setContent(record.getContent());
             recVOS.add(recVO);
         }
         return recVOS;
@@ -111,7 +112,7 @@ public class UploadController {
     RecordVO recordVO=new RecordVO();
     recordVO.setContent(content);
     recordVO.setWarning(out);
-    Record record=new Record(4,out,name);
+    Record record=new Record(4,out,name,content);
     recordRepository.save(record);
     return recordVO;
     }

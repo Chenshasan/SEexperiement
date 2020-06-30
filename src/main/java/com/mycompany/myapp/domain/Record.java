@@ -19,10 +19,22 @@ public class Record {
     @Column(name="filename",nullable = true)
     private String filename;
 
-    public Record(int userId, String warning, String filename) {
+    @Column(name="content",nullable = true)
+    private String content;
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public Record(int userId, String warning, String filename,String content) {
         this.userId = userId;
         this.warning = warning;
         this.filename = filename;
+        this.content=content;
     }
 
     public Record(){

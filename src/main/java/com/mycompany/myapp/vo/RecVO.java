@@ -5,6 +5,15 @@ public class RecVO {
     int userId;
     String warning;
     String filename;
+    String content;
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
 
     public int getId() {
         return id;
