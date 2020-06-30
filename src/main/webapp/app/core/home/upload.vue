@@ -20,7 +20,6 @@
                     <uploader-list></uploader-list>
                 </uploader>
             </div>
-            <a id="link" style="color: black;font-weight: bold" @click="finish">已完成文件上传</a>
         </div>
 
         <div id="wrapper1" v-if="this.loading">
@@ -82,12 +81,15 @@ export default{
     onFileAdded1(file) {
       console.log(file);
     },
-    onFileProgress1(rootFile, file, chunk) {},
+    onFileProgress1(rootFile, file, chunk) {
+        this.loading=true
+    },
     onFileSuccess1(rootFile, file, response, chunk) {
         let res = JSON.parse(response);
         console.log(res)
         this.$store.commit('setPassage',res.content)
         this.$store.commit('setWarning',res.warning)
+        this.$router.push({name: 'Result'})
     },
     onFileError1(rootFile, file, response, chunk) {
     },
@@ -114,15 +116,6 @@ export default{
         type: "error"
       });
     },
-      sleep (time) {
-          return new Promise((resolve) => setTimeout(resolve, time));
-      },
-      finish() {
-          this.loading = true;
-          this.sleep(3000).then(() => {
-              this.$router.push({name: 'Result'})
-          })
-      }
   }
 
 

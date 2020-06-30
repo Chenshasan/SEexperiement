@@ -8,7 +8,21 @@
         </div>
         <div class="jumbotron1 masthead1">
             <div class="container">
-                <h2>数组越界</h2>
+                <div style="display: flex">
+                    <h4 style="font-size: 25px;color: black;font-weight: normal;margin-left: 30px">数组越界</h4>
+                    <div style="width: 15px;height: 15px;background-color: #cff6cf;margin-top: 10px;margin-left: 15px"></div>
+                    <h4 style="font-size: 25px;color: black;font-weight: normal;margin-left: 30px">慢速內存操作</h4>
+                    <div style="width: 15px;height: 15px;background-color: #dbe2ef;margin-top: 10px;margin-left: 15px"></div>
+                    <h4 style="font-size: 25px;color: black;font-weight: normal;margin-left: 30px">类型不匹配</h4>
+                    <div style="width: 15px;height: 15px;background-color: #ddf3f5;margin-top: 10px;margin-left: 15px"></div>
+                    <h4 style="font-size: 25px;color: black;font-weight: normal;margin-left: 30px">大型变量</h4>
+                    <div style="width: 15px;height: 15px;background-color: #fce8d5;margin-top: 10px;margin-left: 15px"></div>
+                    <h4 style="font-size: 25px;color: black;font-weight: normal;margin-left: 30px">空指针</h4>
+                    <div style="width: 15px;height: 15px;background-color: #efc7c6;margin-top: 10px;margin-left: 15px"></div>
+                    <h4 style="font-size: 25px;color: black;font-weight: normal;margin-left: 30px">double free</h4>
+                    <div style="width: 15px;height: 15px;background-color: #b4ecef;margin-top: 10px;margin-left: 15px"></div>
+
+                </div>
 
                 <pre v-highlightjs=codeDate ><code class="c++">
 {{this.codeContent}}
@@ -45,7 +59,31 @@
             for(i=0;i<this.warningList.length;i++){
                 this.warn=this.warningList[i].split(":")
                 this.index=parseInt(this.warn[1])
-                $("li:nth-child("+this.index+")").css({"background-color":"#dbe2ef"});
+
+                if(this.warn[3]){
+                    console.log(this.warn)
+                    console.log(this.warn[3])
+                    console.log(Boolean(this.warn[3]=="慢速内存"))
+                    if(Boolean(this.warn[3]=="慢速内存")){
+                        console.log('aaa')
+                        $("li:nth-child("+this.index+")").css({"background-color":"#dbe2ef"});
+                    }else if(Boolean(this.warn[3].toString()==="數組越界")){
+                        console.log('aaa')
+                        $("li:nth-child("+this.index+")").css({"background-color":"#cff6cf"});
+                    }else if(Boolean(this.warn[3].toString()==="类型不匹配")){
+                        console.log('aaa')
+                        $("li:nth-child("+this.index+")").css({"background-color":"#ddf3f5"});
+                    }else if(Boolean(this.warn[3].toString()==="大型变量")){
+                        console.log('aaa')
+                        $("li:nth-child("+this.index+")").css({"background-color":"#fce8d5"});
+                    } else if(this.warn[3].toString()==="空指针"){
+                        console.log('aaa')
+                        $("li:nth-child("+this.index+")").css({"background-color":"#efc7c6"});
+                    } else if(Boolean(this.warn[3].toString()==="double free")){
+                        console.log('aaa')
+                        $("li:nth-child("+this.index+")").css({"background-color":"#b4ecef"});
+                    }
+                }
             }
     }
     }

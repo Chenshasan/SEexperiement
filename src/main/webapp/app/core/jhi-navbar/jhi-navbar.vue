@@ -1,6 +1,6 @@
 <template>
-    <div class="wrapper">
-    <b-navbar toggleable="sm" type="dark" class="jh-navbar fixed-top">
+    <div>
+    <b-navbar type="dark" class="jh-navbar fixed-top">
         <div class="jh-logo-container float-left">
             <b-navbar-toggle right class="jh-navbar-toggler d-lg-none float-right" href="javascript:void(0);"  data-toggle="collapse" target="header-tabs" aria-expanded="false" aria-label="Toggle navigation">
                 <font-awesome-icon icon="bars" />
@@ -132,7 +132,7 @@
 
 .jh-navbar {
     background-color: #ffffff;
-    padding: 3em 2em;
+    padding: 10px 2em;
     box-shadow: 0 3px 7px rgba(0,0,0,.55);
 }
 

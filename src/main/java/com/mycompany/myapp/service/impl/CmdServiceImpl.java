@@ -98,13 +98,13 @@ public class CmdServiceImpl {
                     String extra_info="";
                     switch (pos){
                         case 0:
-                            error_info="数组越界";
+                            error_info="数组越界:";
                             break;
                         case 1:
-                            error_info="慢速内存操作";
+                            error_info="慢速内存:";
                             break;
                         case 2:
-                            error_info="类型不匹配";
+                            error_info="类型不匹配:";
                             break;
                         case 3:
                             error_info="大型变量";

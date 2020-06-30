@@ -6,14 +6,13 @@
                 <h2>简洁、直观的静态分析工具，让代码更安全、简单。</h2>
                 <h5>当前版本： v1.0.0 | 文档更新于：2020-04-25</h5>
                 <hr>
-                <router-link class="btn btn-lg" to="/upload">点击开始进入静态分析之旅</router-link>
+                <a style="font-size: 22px;font-weight: normal" @click="jump">点击开始进入静态分析之旅</a>
             </div>
         </div>
     </div>
 </template>
 
 <script lang="ts" src="./home.component.ts">
-
 </script>
 
 <style scoped>
