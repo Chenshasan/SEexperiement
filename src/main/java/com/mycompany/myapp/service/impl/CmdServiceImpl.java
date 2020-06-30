@@ -91,7 +91,7 @@ public class CmdServiceImpl {
             BufferedReader br = new BufferedReader(new InputStreamReader(stdout,charset));
             String line=null;
             while((line=br.readLine()) != null){
-                if(line.startsWith("./ASTVisitor")){
+                if(line.startsWith("./ASTVisitor")&& !line.contains("fatal error")){
                     line=line.substring(19);
                     int pos=Integer.parseInt(line.split(":")[3]);
                     String error_info="";
@@ -122,8 +122,8 @@ public class CmdServiceImpl {
                     sp[3]=error_info;
                     if(pos>=3) sp[4]=extra_info;
                     line=String.join(":",sp);
+                    buffer.append(line+"\n");
                 }
-                buffer.append(line+"\n");
             }
         } catch (UnsupportedEncodingException e) {
             log.error("解析脚本出错："+e.getMessage());
