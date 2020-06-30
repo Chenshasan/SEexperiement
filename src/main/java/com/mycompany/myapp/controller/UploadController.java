@@ -1,12 +1,16 @@
 package com.mycompany.myapp.controller;
 
+import com.mycompany.myapp.domain.Record;
+import com.mycompany.myapp.repository.RecordRepository;
 import com.mycompany.myapp.service.IUploadService;
 //import com.mycompany.myapp.vo.Chunk;
 import com.mycompany.myapp.service.impl.CmdServiceImpl;
+import com.mycompany.myapp.vo.RecVO;
 import com.mycompany.myapp.vo.RecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,23 +21,23 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 
 @RequestMapping("/upload")
 @RestController
 @Slf4j
 @CrossOrigin
+@Service
 public class UploadController {
 
     //private final static String CHUNK_FOLDER = "/Users/yangwei/resource/data/chunk";
-    private final static String SINGLE_FOLDER = "D:\\googleDownload";
+    private final static String SINGLE_FOLDER = "E:\\work\\resource";
 
     @Autowired
     private IUploadService uploadService;
+    @Autowired
+    private RecordRepository recordRepository;
 //    @Autowired
 //    private CmdService cmdService;
 
@@ -53,6 +57,24 @@ public class UploadController {
 //            e.printStackTrace();
 //        }
 //    }
+
+
+    @ResponseBody
+    @GetMapping("/{userId}/getUserRecord")
+    public List<RecVO> getUserRecord(@PathVariable int userId){
+        List <Record> records=recordRepository.findRecordsByUserId(userId);
+        List <RecVO> recVOS = new ArrayList<>();
+        for (Record record : records){
+            RecVO recVO=new RecVO();
+            recVO.setFilename(record.getFilename());
+            recVO.setId(record.getId());
+            recVO.setUserId(record.getUserId());
+            recVO.setWarning(record.getWarning());
+            recVOS.add(recVO);
+        }
+        return recVOS;
+    }
+
 
     @ResponseBody
     @RequestMapping("/single")
@@ -89,6 +111,8 @@ public class UploadController {
     RecordVO recordVO=new RecordVO();
     recordVO.setContent(content);
     recordVO.setWarning(out);
+    Record record=new Record(4,out,name);
+    recordRepository.save(record);
     return recordVO;
     }
 
