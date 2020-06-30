@@ -12,12 +12,21 @@
         </div>
         <b-collapse is-nav id="header-tabs">
             <b-navbar-nav class="ml-auto">
+
                 <b-nav-item to="/" exact>
                     <span>
                         <font-awesome-icon icon="home" />
                         <span v-text="$t('global.menu.home')">Home</span>
                     </span>
                 </b-nav-item>
+
+                <b-nav-item to="/record" exact>
+                    <span>
+                        <font-awesome-icon icon="book" />
+                        <span>检测记录</span>
+                    </span>
+                </b-nav-item>
+
                 <b-nav-item-dropdown
                     id="entity-menu"
                     v-if="authenticated"
@@ -67,6 +76,7 @@
                         <span v-text="$t('global.menu.admin.apidocs')">API</span>
                     </b-dropdown-item>
                 </b-nav-item-dropdown>
+
                 <b-nav-item-dropdown id="languagesnavBarDropdown" right v-if="languages && Object.keys(languages).length > 1">
                     <span slot="button-content">
                         <font-awesome-icon icon="flag" />
@@ -77,6 +87,7 @@
                         {{value.name}}
                     </b-dropdown-item>
                 </b-nav-item-dropdown>
+
                 <b-nav-item-dropdown
                     right
                     href="javascript:void(0);"
@@ -111,6 +122,7 @@
                         <span v-text="$t('global.menu.account.register')">Register</span>
                     </b-dropdown-item>
                 </b-nav-item-dropdown>
+
             </b-navbar-nav>
         </b-collapse>
     </b-navbar>

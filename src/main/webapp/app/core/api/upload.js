@@ -7,3 +7,10 @@ export function merge(form) {
     data: form
   });
 }
+
+export function getRecordListAPI() {
+  return request({
+    url: '/upload/4/getUserRecord',
+    method: 'get'
+  });
+}

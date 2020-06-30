@@ -3,7 +3,7 @@
         <div class="jumbotron masthead">
             <div class="container">
                 <h1>XAnalysis</h1>
-                <h2>开始查看您的代码分析结果。</h2>
+                <h2>开始查看您的代码分析结果</h2>
             </div>
         </div>
         <div class="jumbotron1 masthead1">
@@ -21,7 +21,6 @@
                     <div style="width: 15px;height: 15px;background-color: #efc7c6;margin-top: 10px;margin-left: 15px"></div>
                     <h4 style="font-size: 25px;color: black;font-weight: normal;margin-left: 30px">double free</h4>
                     <div style="width: 15px;height: 15px;background-color: #b4ecef;margin-top: 10px;margin-left: 15px"></div>
-
                 </div>
 
                 <pre v-highlightjs=codeDate ><code class="c++">

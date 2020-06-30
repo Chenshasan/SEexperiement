@@ -19,11 +19,12 @@ export default class Home extends Vue {
   }
 
   public jump() {
-    if (this.authenticated) {
-      this.$router.push('/upload');
-    } else {
-      this.openLogin();
-    }
+    this.$router.push('/upload');
+    // if (this.authenticated) {
+    //   this.$router.push('/upload');
+    // } else {
+    //   this.openLogin();
+    // }
   }
 
   public get authenticated(): boolean {
