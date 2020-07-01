@@ -19,11 +19,11 @@
 #include "llvm/Support/raw_ostream.h"
 #include "clang-c/Index.h"
 
-#include "./pointerChecker/pointerChecker.h"
-#include "./functionChecker/functionChecker.h"
-#include "./SwitchChecker/SwitchChecker.h"
-#include "./SpaceChecker/SpaceChecker.h"
-#include "./common/errNo.h"
+#include "./PointerChecker/pointerChecker.h"
+#include "./FunctionChecker/functionChecker.h"
+#include "./SwitchChecker/switchChecker.h"
+#include "./SpaceChecker/spaceChecker.h"
+#include "./Common/errNo.h"
 
 using namespace clang;
 using namespace std;
@@ -35,7 +35,7 @@ ASTContext *CTX;
 int ForStmtEndLine = 0;
 int Pointer::numsOfPointer;
 std::string curFuncName;
-std::ofstream printer::of;
+std::ofstream Printer::of;
 unordered_map<string, EnumDecl *> EDs;
 
 // By implementing RecursiveASTVisitor, we can specify which AST nodes

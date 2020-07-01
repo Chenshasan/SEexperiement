@@ -1,5 +1,5 @@
 #include "pointerChecker.h"
-#include "../common/errNo.h"
+#include "../Common/errNo.h"
 
 int PointerChecker::nullDerefCheck(const Pointer &p2deref, const std::string &locString)
 {

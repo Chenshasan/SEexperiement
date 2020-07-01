@@ -6,8 +6,8 @@
 #include "clang/AST/RecursiveASTVisitor.h"
 
 #include "../myASTVisitor.h"
-#include "../common/errNo.h"
-#include "SpaceChecker.h"
+#include "../Common/errNo.h"
+#include "spaceChecker.h"
 
 SpaceChecker::SpaceChecker()
 {

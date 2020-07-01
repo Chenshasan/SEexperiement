@@ -11,8 +11,8 @@
 #include "clang/AST/RecursiveASTVisitor.h"
 
 #include "../myASTVisitor.h"
-#include "../common/errNo.h"
-#include "SwitchChecker.h"
+#include "../Common/errNo.h"
+#include "switchChecker.h"
 
 using namespace clang;
 using namespace std;

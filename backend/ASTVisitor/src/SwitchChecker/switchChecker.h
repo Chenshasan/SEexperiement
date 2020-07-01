@@ -8,7 +8,7 @@
 #include "clang/AST/Stmt.h"
 #include "clang/AST/Type.h"
 
-#include "../common/printer.h"
+#include "../Common/printer.h"
 
 using namespace clang;
 using namespace std;
@@ -17,7 +17,7 @@ extern const vector<string> VALID_COND_TYPE_LIST;
 
 extern const unordered_map<string, vector<string>> VALID_CAST_TABLE;
 
-class SwitchChecker: public printer
+class SwitchChecker: public Printer
 {
 
 public:

@@ -48,7 +48,7 @@ BUILDDIR := build
 all:$(BUILDDIR)/myASTVisitor
 	
 
-$(BUILDDIR)/myASTVisitor: $(DIR_SRCS)/myASTVisitor.cpp $(DIR_SRCS)/pointerChecker/pointerChecker.cpp $(DIR_SRCS)/SwitchChecker/SwitchChecker.cpp $(DIR_SRCS)/SpaceChecker/SpaceChecker.cpp 
+$(BUILDDIR)/myASTVisitor: $(DIR_SRCS)/myASTVisitor.cpp $(DIR_SRCS)/PointerChecker/pointerChecker.cpp $(DIR_SRCS)/SwitchChecker/switchChecker.cpp $(DIR_SRCS)/SpaceChecker/spaceChecker.cpp $(DIR_SRCS)/SwitchChecker/switchChecker.cpp $(DIR_SRCS)/SpaceChecker/spaceChecker.cpp $(DIR_SRCS)/SwitchChecker/switchChecker.cpp $(DIR_SRCS)/SpaceChecker/spaceChecker.cpp $(DIR_SRCS)/FunctionChecker/functionChecker.cpp 
 	$(CXX) $(CXXFLAGS) $(LLVM_CXXFLAGS) $(CLANG_INCLUDES) $^ \
 		$(CLANG_LIBS) $(LLVM_LDFLAGS) -o $@
 

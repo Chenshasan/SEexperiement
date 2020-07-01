@@ -3,14 +3,14 @@
 
 #include "clang/AST/Decl.h"
 
-#include "../common/printer.h"
+#include "../Common/printer.h"
 
 #define WARNING_TRIGGER_VARIABLE_SIZE (1*1024*1024*8)
 
 using namespace clang;
 using namespace std;
 
-class SpaceChecker: public printer
+class SpaceChecker: public Printer
 {
 
 public:

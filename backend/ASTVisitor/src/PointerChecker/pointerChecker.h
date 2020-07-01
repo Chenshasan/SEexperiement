@@ -1,7 +1,7 @@
 #include <map>
 #include "pointer.h"
-#include "../common/printer.h"
-#include "../common/unionFind.h"
+#include "../Common/printer.h"
+#include "../Common/unionFind.h"
 /*
  * 并查集的大小，在初始化并查集的时候提供给它的构造函数
  */
@@ -12,7 +12,7 @@ using UFMap = std::map<std::string, UnionFind *>;
 using PIMap = std::map<int, Pointer *>;
 
 
-class PointerChecker : public printer
+class PointerChecker : public Printer
 {
 /*
  * PointerChecker类 检测指针问题

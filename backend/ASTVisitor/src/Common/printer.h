@@ -1,6 +1,6 @@
 #pragma once
 #include <fstream>
-class printer
+class Printer
 {
 /*
  * class printer
@@ -14,7 +14,7 @@ public:
 /*
  * 默认构造函数
  */
-    printer()
+    Printer()
     {
 
     }
