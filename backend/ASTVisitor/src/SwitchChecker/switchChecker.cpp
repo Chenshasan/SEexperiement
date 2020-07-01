@@ -82,8 +82,8 @@ void SwitchChecker::typeMismatchCheck(SwitchStmt *ss)
       cout << locString.c_str() << ':' << "warning: there is a mismatch between case type and cond type" << endl;
       ssr << locString.c_str() << ':' << "warning: there is a mismatch between case type and cond type" << endl;
 #else
-      cout << locString.c_str() << ':' << ('0' + SwitchMismatch) << endl;
-      ssr << locString.c_str() << ':' << ('0' + SwitchMismatch) << endl;
+      cout << locString.c_str() << ':' << static_cast<char>('0' + SwitchMismatch) << endl;
+      ssr << locString.c_str() << ':' << static_cast<char>('0' + SwitchMismatch) << endl;
 #endif
 
       pprint(ssr.str());
@@ -191,8 +191,8 @@ void SwitchChecker::enumIncompleteCheck(SwitchStmt *ss)
     }
 
 #else
-    cout << locString.c_str() << ':' << ('0' + SwitchMismatch) << endl;
-    ssr << locString.c_str() << ':' << ('0' + SwitchMismatch) << endl;
+    cout << locString.c_str() << ':' << static_cast<char>('0' + SwitchMismatch) << endl;
+    ssr << locString.c_str() << ':' << static_cast<char>('0' + SwitchMismatch) << endl;
 #endif
 
     pprint(ssr.str());
@@ -205,8 +205,8 @@ void SwitchChecker::enumIncompleteCheck(SwitchStmt *ss)
   cout << locString.c_str() << ':' << ' ' << "warning: there is no \'default\' statement" << endl;
   ssr << locString.c_str() << ':' << ' ' << "warning: there is no \'default\' statement" << endl;
 #else
-  cout << locString.c_str() << ':' << ('0' + SwitchMismatch) << endl;
-  ssr << locString.c_str() << ':' << ('0' + SwitchMismatch) << endl;
+  cout << locString.c_str() << ':' << static_cast<char>('0' + SwitchMismatch) << endl;
+  ssr << locString.c_str() << ':' << static_cast<char>('0' + SwitchMismatch) << endl;
 #endif
   pprint(ssr.str());
 }
