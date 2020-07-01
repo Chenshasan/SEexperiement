@@ -20,23 +20,13 @@
                     </span>
                 </b-nav-item>
 
-                <b-nav-item to="/record" exact>
+                <b-nav-item to="/record" exact v-if="authenticated">
                     <span>
                         <font-awesome-icon icon="book" />
                         <span>检测记录</span>
                     </span>
                 </b-nav-item>
 
-                <b-nav-item-dropdown
-                    id="entity-menu"
-                    v-if="authenticated"
-                    active-class="active" class="pointer">
-                    <span slot="button-content" class="navbar-dropdown-menu">
-                        <font-awesome-icon icon="th-list" />
-                        <span v-text="$t('global.menu.entities.main')">Entities</span>
-                    </span>
-                    <!-- jhipster-needle-add-entity-to-menu - JHipster will add entities to the menu here -->
-                </b-nav-item-dropdown>
                 <b-nav-item-dropdown
                     id="admin-menu"
                     v-if="hasAnyAuthority('ROLE_ADMIN')"

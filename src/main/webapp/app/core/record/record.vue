@@ -15,17 +15,10 @@
                     <h1 style="font-size: 23px;font-weight: bold;text-align: left">检测时间</h1>
                 </div>
             </b-list-group-item>
-            <b-list-group-item>
-                <div style="display: flex">
-                    <h1 style="font-size: 23px;font-weight: normal;margin-left: 150px;width: 400px;text-align: left">TestCases.cpp</h1>
-                    <h1 style="font-size: 23px;font-weight: normal;width: 400px;text-align: left">10</h1>
-                    <h1 style="font-size: 23px;font-weight: normal;text-align: left">2020-06-30</h1>
-                </div>
-            </b-list-group-item>
-            <b-list-group-item>
-                <div style="display: flex">
-                    <h1 style="font-size: 23px;font-weight: normal;margin-left: 150px;width: 400px;text-align: left">TestCases.cpp</h1>
-                    <h1 style="font-size: 23px;font-weight: normal;width: 400px;text-align: left">10</h1>
+            <b-list-group-item v-for="res in this.myResList" :key="res.index">
+                <div style="display: flex"  @click="jumpToDetail(res)">
+                    <h1 style="font-size: 23px;font-weight: normal;margin-left: 150px;width: 400px;text-align: left">{{res.filename}}</h1>
+                    <h1 style="font-size: 23px;font-weight: normal;width: 400px;text-align: left">{{res.warning.split('\n').length-1}}</h1>
                     <h1 style="font-size: 23px;font-weight: normal;text-align: left">2020-06-30</h1>
                 </div>
             </b-list-group-item>
@@ -41,18 +34,28 @@
         name: "Record",
         data(){
             return{
-                myRes:'',
+                myResList:'',
+                numList:[],
                 recordList:[],
             }
         },
         async mounted() {
-            axios.defaults.withCredentials = true
+            console.log(this.$store.getters.account.id)
             axios
-                .get('api/4/getUserRecord')
+                .get('api/'+this.$store.getters.account.id+'/getUserRecord')
                 .then(result => {
-                    this.myRes=result;
                     console.log(result)
+                    this.myResList=result.data;
+                    console.log(this.myResList)
                 });
+        },
+        methods:{
+            jumpToDetail(res){
+                console.log('res')
+                this.$store.commit('setPassage',res.content)
+                this.$store.commit('setWarning',res.warning)
+                this.$router.push({name: 'Result'})
+            }
         }
     }
 </script>

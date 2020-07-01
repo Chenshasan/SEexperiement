@@ -22,6 +22,17 @@ public class Record {
     @Column(name="content",nullable = true)
     private String content;
 
+    @Column(name="time",nullable =true)
+    private String time;
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
     public String getContent() {
         return content;
     }
@@ -30,11 +41,12 @@ public class Record {
         this.content = content;
     }
 
-    public Record(int userId, String warning, String filename,String content) {
+    public Record(int userId, String warning, String filename,String content,String time) {
         this.userId = userId;
         this.warning = warning;
         this.filename = filename;
         this.content=content;
+        this.time=time;
     }
 
     public Record(){

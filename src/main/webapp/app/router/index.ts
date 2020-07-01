@@ -45,17 +45,20 @@ export default new Router({
     {
       path: '/result',
       name: 'Result',
-      component:Result
+      component:Result,
+      meta: { authorities: [Authority.USER] }
     },
     {
       path: '/record',
       name: "Record",
-      component:Record
+      component:Record,
+      meta: { authorities: [Authority.USER] }
     },
     {
       path: '/upload',
       name: 'UploadComponent',
       component: UploadComponent,
+      meta: { authorities: [Authority.USER] }
     },
     {
       path: '/forbidden',

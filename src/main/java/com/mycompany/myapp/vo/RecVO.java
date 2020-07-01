@@ -6,6 +6,15 @@ public class RecVO {
     String warning;
     String filename;
     String content;
+    String time;
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
 
     public String getContent() {
         return content;

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @RestController
@@ -31,7 +32,7 @@ import java.util.*;
 public class UploadController {
 
     //private final static String CHUNK_FOLDER = "/Users/yangwei/resource/data/chunk";
-    private final static String SINGLE_FOLDER = "E:\\work\\resource";
+    private final static String SINGLE_FOLDER = "D:\\googleDownload";
 
     @Autowired
     private IUploadService uploadService;
@@ -93,7 +94,16 @@ public class UploadController {
     RecordVO recordVO=new RecordVO();
     recordVO.setContent(content);
     recordVO.setWarning(out);
-    Record record=new Record(4,out,name,content);
+
+        Date date=new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(calendar.DATE, 0);//如果把0修改为-1就代表昨天
+        date = calendar.getTime();
+        SimpleDateFormat format= new SimpleDateFormat("yyyy-MM-dd");
+        String dateString = format.format(date);
+        System.out.println(dateString);
+    Record record=new Record(4,out,name,content,dateString);
     recordRepository.save(record);
     return recordVO;
     }

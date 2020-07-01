@@ -87,6 +87,7 @@ public class AccountResource {
             recVO.setUserId(record.getUserId());
             recVO.setWarning(record.getWarning());
             recVO.setContent(record.getContent());
+            recVO.setTime(record.getTime());
             recVOS.add(recVO);
         }
         return recVOS;
