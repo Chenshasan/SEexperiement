@@ -30,8 +30,8 @@ void SpaceChecker::bigVariableCheck(VarDecl *vd)
     cout << locString.c_str() << ':' << ' ' << "warning: variable" << ' ' << '\'' << qtstr << '\'' << ' ' << '(' << bitToMb(tsize) << "Mb" << ')' << ' ' << "is too big" << endl;
     ssr << locString.c_str() << ':' << ' ' << "warning: variable" << ' ' << '\'' << qtstr << '\'' << ' ' << '(' << bitToMb(tsize) << "Mb" << ')' << ' ' << "is too big" << endl;
 #else
-    cout << locString.c_str() << ':' << ('0' + SpaceProblem) << endl;
-    ssr << locString.c_str() << ':' << ('0' + SpaceProblem) << endl;
+    cout << locString.c_str() << ':' << ('0' + SpaceProblem) << bitToMb(tsize) << endl;
+    ssr << locString.c_str() << ':' << ('0' + SpaceProblem) << bitToMb(tsize) << endl;
 #endif
 
     pprint(ssr.str());

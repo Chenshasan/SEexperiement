@@ -186,13 +186,47 @@ void SwitchChecker::enumIncompleteCheck(SwitchStmt *ss)
         ssr << '\'' << warn_elems[i] << '\'' << ',' << ' ';
       }
       cout << '\'' << warn_elems[2] << '\'' << "..." << endl;
-      ;
       ssr << '\'' << warn_elems[2] << '\'' << "..." << endl;
     }
 
 #else
-    cout << locString.c_str() << ':' << static_cast<char>('0' + SwitchMismatch) << endl;
-    ssr << locString.c_str() << ':' << static_cast<char>('0' + SwitchMismatch) << endl;
+    cout << locString.c_str() << ':' << static_cast<char>('0' + SwitchMismatch);
+    ssr << locString.c_str() << ':' << static_cast<char>('0' + SwitchMismatch);
+
+    if (warn_elems.size() < 4)
+    {
+      assert(warn_elems.size() >= 1);
+
+      cout << ':';
+      ssr << ':';
+
+      if (warn_elems.size() == 3)
+      {
+        cout << '\'' << warn_elems[2] << '\'' << ',' << ' ';
+        ssr << '\'' << warn_elems[2] << '\'' << ',' << ' ';
+      }
+      if (warn_elems.size() == 2 || warn_elems.size() == 3)
+      {
+        cout << '\'' << warn_elems[1] << '\'' << ' ' << "and" << ' ';
+        ssr << '\'' << warn_elems[1] << '\'' << ' ' << "and" << ' ';
+      }
+      cout << '\'' << warn_elems[0] << '\'' << endl;
+      ssr << '\'' << warn_elems[0] << '\'' << endl;
+    }
+    else
+    {
+      cout << ':';
+      ssr << ':';
+
+      for (int i = 0; i < 2; i++)
+      {
+        cout << '\'' << warn_elems[i] << '\'' << ',' << ' ';
+        ssr << '\'' << warn_elems[i] << '\'' << ',' << ' ';
+      }
+      cout << '\'' << warn_elems[2] << '\'' << "..." << endl;
+      ssr << '\'' << warn_elems[2] << '\'' << "..." << endl;
+    }
+
 #endif
 
     pprint(ssr.str());
@@ -209,6 +243,11 @@ void SwitchChecker::enumIncompleteCheck(SwitchStmt *ss)
   ssr << locString.c_str() << ':' << static_cast<char>('0' + SwitchMismatch) << endl;
 #endif
   pprint(ssr.str());
+}
+
+void SwitchChecker::floatAndStringCheck(string filename)
+{
+  string content = getFileAllContent(filename);
 }
 
 vector<SwitchCase *> SwitchChecker::getCaseByOrder(SwitchStmt *ss)
@@ -261,4 +300,12 @@ string SwitchChecker::getEnumNameAsString(QualType type)
   assert(!can.compare(0, 4, "enum"));
 
   return can.substr(5);
+}
+
+string SwitchChecker::getFileAllContent(string filename)
+{
+  ifstream fin(filename, ios::in);
+  stringstream buf;
+  buf << fin.rdbuf();
+  return buf.str();
 }
