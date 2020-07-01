@@ -23,9 +23,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-
-@RequestMapping("/upload")
 @RestController
+@RequestMapping("/upload")
 @Slf4j
 @CrossOrigin
 @Service
