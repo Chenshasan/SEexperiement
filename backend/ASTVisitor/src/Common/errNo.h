@@ -9,7 +9,7 @@ enum{
     ArrayOutOfBound,
     SlowMemoryOper,
     SwitchMismatch,
-    BigVar,
+    SpaceProblem,
     NullDeref,
     DoubleFree
 };

@@ -23,19 +23,18 @@ void SpaceChecker::bigVariableCheck(VarDecl *vd)
   if (tsize >= WARNING_TRIGGER_VARIABLE_SIZE)
   {
     string qtstr = qt.getAsString();
+    string locString = beginLoc.printToString(*SM);
+    stringstream ssr;
+
 #ifdef OOP
-    string locString = beginLoc.printToString(*SM);
     cout << locString.c_str() << ':' << ' ' << "warning: variable" << ' ' << '\'' << qtstr << '\'' << ' ' << '(' << bitToMb(tsize) << "Mb" << ')' << ' ' << "is too big" << endl;
-    stringstream ssr;
     ssr << locString.c_str() << ':' << ' ' << "warning: variable" << ' ' << '\'' << qtstr << '\'' << ' ' << '(' << bitToMb(tsize) << "Mb" << ')' << ' ' << "is too big" << endl;
-    pprint(ssr.str());
 #else
-    string locString = beginLoc.printToString(*SM);
-    stringstream ssr;
-    ssr << locString.c_str() << ':' << static_cast<char>('0' + BigVar) << ':' << bitToMb(tsize) << endl;
-    pprint(ssr.str());
-    std::cout << ssr.str();
+    cout << locString.c_str() << ':' << ('0' + SpaceProblem) << endl;
+    ssr << locString.c_str() << ':' << ('0' + SpaceProblem) << endl;
 #endif
+
+    pprint(ssr.str());
   }
 }
 
