@@ -46,8 +46,9 @@
             }
         },
         async mounted() {
+            axios.defaults.withCredentials = true
             axios
-                .get('/upload/4/getUserRecord')
+                .get('api/4/getUserRecord')
                 .then(result => {
                     this.myRes=result;
                 });

@@ -1,13 +1,16 @@
 package com.mycompany.myapp.web.rest;
 
 
+import com.mycompany.myapp.domain.Record;
 import com.mycompany.myapp.domain.User;
+import com.mycompany.myapp.repository.RecordRepository;
 import com.mycompany.myapp.repository.UserRepository;
 import com.mycompany.myapp.security.SecurityUtils;
 import com.mycompany.myapp.service.MailService;
 import com.mycompany.myapp.service.UserService;
 import com.mycompany.myapp.service.dto.PasswordChangeDTO;
 import com.mycompany.myapp.service.dto.UserDTO;
+import com.mycompany.myapp.vo.RecVO;
 import com.mycompany.myapp.web.rest.errors.*;
 import com.mycompany.myapp.web.rest.vm.KeyAndPasswordVM;
 import com.mycompany.myapp.web.rest.vm.ManagedUserVM;
@@ -15,6 +18,7 @@ import com.mycompany.myapp.web.rest.vm.ManagedUserVM;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,6 +42,9 @@ public class AccountResource {
     private final Logger log = LoggerFactory.getLogger(AccountResource.class);
 
     private final UserRepository userRepository;
+
+    @Autowired
+    private RecordRepository recordRepository;
 
     private final UserService userService;
 
@@ -66,6 +73,23 @@ public class AccountResource {
         }
         User user = userService.registerUser(managedUserVM, managedUserVM.getPassword());
         mailService.sendActivationEmail(user);
+    }
+
+    @ResponseBody
+    @GetMapping("/{userId}/getUserRecord")
+    public List<RecVO> getUserRecord(@PathVariable int userId){
+        List <Record> records=recordRepository.findRecordsByUserId(userId);
+        List <RecVO> recVOS = new ArrayList<>();
+        for (Record record : records){
+            RecVO recVO=new RecVO();
+            recVO.setFilename(record.getFilename());
+            recVO.setId(record.getId());
+            recVO.setUserId(record.getUserId());
+            recVO.setWarning(record.getWarning());
+            recVO.setContent(record.getContent());
+            recVOS.add(recVO);
+        }
+        return recVOS;
     }
 
     /**

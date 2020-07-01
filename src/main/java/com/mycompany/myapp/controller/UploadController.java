@@ -60,24 +60,6 @@ public class UploadController {
 
 
     @ResponseBody
-    @GetMapping("/{userId}/getUserRecord")
-    public List<RecVO> getUserRecord(@PathVariable int userId){
-        List <Record> records=recordRepository.findRecordsByUserId(userId);
-        List <RecVO> recVOS = new ArrayList<>();
-        for (Record record : records){
-            RecVO recVO=new RecVO();
-            recVO.setFilename(record.getFilename());
-            recVO.setId(record.getId());
-            recVO.setUserId(record.getUserId());
-            recVO.setWarning(record.getWarning());
-            recVO.setContent(record.getContent());
-            recVOS.add(recVO);
-        }
-        return recVOS;
-    }
-
-
-    @ResponseBody
     @RequestMapping("/single")
     public RecordVO uploadCategory(HttpServletRequest request,
                                    @RequestParam("file") MultipartFile[] file){
