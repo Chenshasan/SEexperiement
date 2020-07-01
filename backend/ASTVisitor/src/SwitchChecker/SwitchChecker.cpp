@@ -85,7 +85,8 @@ void SwitchChecker::typeMismatchCheck(SwitchStmt* ss)
       #else
       ssr<<locString.c_str() << ':' <<('0'+SwitchMismatch)<<endl;
       pprint(ssr.str());
-      #endif
+      std::cout << ssr.str();
+#endif
     }
   }
 }

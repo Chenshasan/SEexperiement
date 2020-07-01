@@ -34,6 +34,7 @@ void SpaceChecker::bigVariableCheck(VarDecl *vd)
     stringstream ssr;
     ssr << locString.c_str() << ':' << static_cast<char>('0' + BigVar) << ':' << bitToMb(tsize) << endl;
     pprint(ssr.str());
+    std::cout << ssr.str();
 #endif
   }
 }

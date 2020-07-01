@@ -330,6 +330,7 @@ public:
 #else
       string warns = lhs->getBeginLoc().printToString(*SM) + ':' + static_cast<char>('0' + SlowMemoryOper) + '\n';
       pc.pprint(warns);
+      std::cout << warns;
 #endif
     }
     else if (rsize <= 2)
@@ -343,6 +344,7 @@ public:
 #else
       string warns = rhs->getBeginLoc().printToString(*SM) + ':' + static_cast<char>('0' + SlowMemoryOper) + '\n';
       pc.pprint(warns);
+      std::cout << warns;
 #endif
     }
     return true;
@@ -549,7 +551,6 @@ int main(int argc, char *argv[])
 
   ASTContext &context = TheCompInst.getASTContext();
   CTX = &context;
-
   // Parse the file to AST, registering our consumer as the AST consumer.
   ParseAST(TheCompInst.getPreprocessor(), &TheConsumer,
            TheCompInst.getASTContext());
