@@ -51,6 +51,7 @@
                 .get('api/4/getUserRecord')
                 .then(result => {
                     this.myRes=result;
+                    console.log(result)
                 });
         }
     }
