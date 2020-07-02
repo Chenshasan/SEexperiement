@@ -19,7 +19,7 @@
                     <div style="width: 15px;height: 15px;background-color: #fce8d5;margin-top: 10px;margin-left: 15px"></div>
                     <h4 style="font-size: 25px;color: black;font-weight: normal;margin-left: 30px">空指针</h4>
                     <div style="width: 15px;height: 15px;background-color: #efc7c6;margin-top: 10px;margin-left: 15px"></div>
-                    <h4 style="font-size: 25px;color: black;font-weight: normal;margin-left: 30px">double free</h4>
+                    <h4 style="font-size: 25px;color: black;font-weight: normal;margin-left: 30px">指针多重释放</h4>
                     <div style="width: 15px;height: 15px;background-color: #b4ecef;margin-top: 10px;margin-left: 15px"></div>
                 </div>
 
@@ -75,12 +75,15 @@
                     }else if(Boolean(this.warn[3].toString()==="大型变量")){
                         console.log('aaa')
                         $("li:nth-child("+this.index+")").css({"background-color":"#fce8d5"});
+                        $("li:nth-child("+this.index+")").append("&nbsp;&nbsp;&nbsp;&nbsp;报错信息："+this.warn[4]);
                     } else if(this.warn[3].toString()==="空指针"){
                         console.log('aaa')
                         $("li:nth-child("+this.index+")").css({"background-color":"#efc7c6"});
+                        $("li:nth-child("+this.index+")").append("&nbsp;&nbsp;&nbsp;&nbsp;报错信息："+this.warn[4]);
                     } else if(Boolean(this.warn[3].toString()==="double free")){
                         console.log('aaa')
                         $("li:nth-child("+this.index+")").css({"background-color":"#b4ecef"});
+                        $("li:nth-child("+this.index+")").append("&nbsp;&nbsp;&nbsp;&nbsp;报错信息："+this.warn[4]);
                     }
                 }
             }

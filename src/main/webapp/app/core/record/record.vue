@@ -19,7 +19,7 @@
                 <div style="display: flex"  @click="jumpToDetail(res)">
                     <h1 style="font-size: 23px;font-weight: normal;margin-left: 150px;width: 400px;text-align: left">{{res.filename}}</h1>
                     <h1 style="font-size: 23px;font-weight: normal;width: 400px;text-align: left">{{res.warning.split('\n').length-1}}</h1>
-                    <h1 style="font-size: 23px;font-weight: normal;text-align: left">2020-06-30</h1>
+                    <h1 style="font-size: 23px;font-weight: normal;text-align: left">{{res.time}}</h1>
                 </div>
             </b-list-group-item>
         </b-list-group>
