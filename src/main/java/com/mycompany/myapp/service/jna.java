@@ -13,7 +13,7 @@ public class jna {
 
     public interface CLibrary extends Library {
         CLibrary INSTANCE = (CLibrary)
-                Native.loadLibrary("Hello.dll",
+                Native.loadLibrary("myASTVisitor.dll",
                         CLibrary.class);
 
         int inc(int a);
@@ -22,7 +22,7 @@ public class jna {
     public static void jna(String[] args) throws IOException {
         //Process process =Runtime.getRuntime().exec("E:\\work\\resource\\JNAtest\\src\\main\\java\\Hello.exe");
         try {
-            Process pr  = Runtime.getRuntime().exec("E:\\work\\resource\\JNAtest\\src\\main\\java\\Hello.exe");//之用Rumtime执行一个cmd命令，返回一个Process对象
+            Process pr  = Runtime.getRuntime().exec("E:\\work\\resource\\JNAtest\\src\\main\\java\\myASTVisitor");//之用Rumtime执行一个cmd命令，返回一个Process对象
             //获取执行命令进程的响应信息
             BufferedReader br = new BufferedReader(new InputStreamReader(pr.getInputStream()));
             while(true){
@@ -52,6 +52,11 @@ public class jna {
     public boolean VisitStmt(){
         return true;
     }
+
+    public boolean VisitCallExpr(){
+        return true;
+    }
+
     //Process process =Runtime.getRuntime().exec("E:\\work\\resource\\JNAtest\\src\\main\\java\\Hello.exe");
 //        try {
 //        Process pr  = Runtime.getRuntime().exec("E:\\work\\resource\\JNAtest\\src\\main\\java\\Hello.exe");//之用Rumtime执行一个cmd命令，返回一个Process对象
