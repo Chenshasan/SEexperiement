@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div style="height: 100%">
         <div id="wrapper" v-if="!this.loading">
             <div class="uploadDiv1">
                 <uploader
@@ -20,7 +20,6 @@
                     <uploader-list></uploader-list>
                 </uploader>
             </div>
-            <a id="link" style="color: black;font-weight: bold" @click="finish">已完成文件上传</a>
         </div>
 
         <div id="wrapper1" v-if="this.loading">
@@ -45,7 +44,7 @@
                         <div class="circle4"></div>
                     </div>
                 </div>
-                <h3 style="margin-top: 50px;font-size: 40px;font-weight: bold">Loading stuff...</h3>
+                <h3 style="margin-top: 50px;font-size: 40px;font-weight: bold;">Loading stuff...</h3>
             </div>
         </div>
     </div>
@@ -53,12 +52,13 @@
 
 <script>
 import { merge } from "../api/upload";
+import { Store } from 'vuex';
 
 export default{
     name: "Upload",
     data() {
     return {
-        loading:false,
+      loading:false,
       panelShow: false, //选择文件后，展示上传panel
       collapse: false,
       files: [],
@@ -69,11 +69,10 @@ export default{
         headers: {},
         query() {},
         categaryMap: { //用于限制上传的类型
-          image: ["gif", "jpg", "jpeg", "png", "bmp","cpp"],
+          document: ["gif", "jpg", "jpeg", "png", "bmp","cpp"],
         }
       },
       attrs: {
-        accept:  ["gif", "jpg", "jpeg", "png", "bmp","cpp"],
       },
     }
   },
@@ -82,16 +81,23 @@ export default{
     onFileAdded1(file) {
       console.log(file);
     },
-    onFileProgress1() {},
-    onFileSuccess1() {
+    onFileProgress1(rootFile, file, chunk) {
+        this.loading=true
     },
-    onFileError1() {
+    onFileSuccess1(rootFile, file, response, chunk) {
+        let res = JSON.parse(response);
+        console.log(res)
+        this.$store.commit('setPassage',res.content)
+        this.$store.commit('setWarning',res.warning)
+        this.$router.push({name: 'Result'})
+    },
+    onFileError1(rootFile, file, response, chunk) {
     },
     onFileAdded2(file) {
       console.log(file);
     },
-    onFileProgress2() {},
-    onFileSuccess2(file, response) {
+    onFileProgress2(rootFile, file, chunk) {},
+    onFileSuccess2(rootFile, file, response, chunk) {
       let res = JSON.parse(response);
       if (res.code == 1) {
         return;
@@ -100,31 +106,23 @@ export default{
         const formData = new FormData();
         formData.append("identifier", file.uniqueIdentifier);
         formData.append("filename", file.name);
-        merge(formData);
+        merge(formData).then(response => {});
+      } else {
       }
     },
-    onFileError2(response) {
+    onFileError2(rootFile, file, response, chunk) {
       this.$message({
         message: response,
         type: "error"
       });
     },
-      sleep (time) {
-            return new Promise((resolve) => setTimeout(resolve, time));
-      },
-      finish() {
-          this.loading = true;
-          this.sleep(3000).then(() => {
-              this.$router.push({name: 'Result'})
-          })
-      }
   }
 
 
 }
 </script>
 
-<style>
+<style scoped>
     #wrapper{
         box-shadow: 0 3px 7px rgba(0,0,0,.75), 0 -3px 7px rgba(0,0,0,.2);
         padding: 100px 30px;
@@ -133,16 +131,13 @@ export default{
 
     #wrapper1{
         width: 100%;
-        height: 800px;
+        height: 100%;
         box-shadow: 0 3px 7px rgba(0,0,0,.75), 0 -3px 7px rgba(0,0,0,.2);
-        margin-top: 50px;
-        padding: 45px 35px;
+        padding: 40px 40px 15px;
     }
 
     .jumbotron {
-        position: relative;
-        padding: 200px 200px;
-        height: 100%;
+        padding: 215px 215px;
         color: #fff;
         text-align: center;
         text-shadow: 0 1px 3px rgba(0,0,0,.4), 0 0 30px rgba(0,0,0,.075);

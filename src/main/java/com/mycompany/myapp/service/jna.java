@@ -44,6 +44,14 @@ public class jna {
 //            CLibrary.INSTANCE.inc("Argument %d: %s\n", i, args[i]);
 //        }
     }
+
+    public boolean VisitFunctionDecl(){
+        return true;
+    }
+
+    public boolean VisitStmt(){
+        return true;
+    }
     //Process process =Runtime.getRuntime().exec("E:\\work\\resource\\JNAtest\\src\\main\\java\\Hello.exe");
 //        try {
 //        Process pr  = Runtime.getRuntime().exec("E:\\work\\resource\\JNAtest\\src\\main\\java\\Hello.exe");//之用Rumtime执行一个cmd命令，返回一个Process对象
