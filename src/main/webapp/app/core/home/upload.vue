@@ -1,6 +1,6 @@
 <template>
     <div style="height: 100%">
-        <div id="wrapper" v-if="!this.loading">
+        <div id="wrapper" v-if="!this.loading" style="background-color: white">
             <div class="uploadDiv1">
                 <uploader
                     ref="uploader"

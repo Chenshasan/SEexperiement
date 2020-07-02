@@ -1,5 +1,5 @@
 <template>
-    <div id="wrapper">
+    <div id="wrapper" style="background-color: white">
         <div class="jumbotron masthead">
             <div class="container">
                 <h1>XAnalysis</h1>

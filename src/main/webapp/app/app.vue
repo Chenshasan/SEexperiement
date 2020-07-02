@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div style="background-color: #F6F6F6">
         <div style="height: 50px">
             <jhi-navbar></jhi-navbar>
         </div>
