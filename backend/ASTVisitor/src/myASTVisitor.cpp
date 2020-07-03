@@ -170,7 +170,7 @@ public:
             }
             else
             {
-              p = new Pointer(pname, isVALID);
+              p = new Pointer(pname, isUNPREDICTABLE);
               pc.declPointer(p);
             }
           }
@@ -236,6 +236,9 @@ public:
   bool VisitBinaryOperator(BinaryOperator *stmt)
   {
     //stmt->dump();
+    //skip if conditions
+    if (ifAvoid.find(stmt) != ifAvoid.end())
+      return true;
     SourceLocation beginLoc = stmt->getBeginLoc();
     string beginLocString = beginLoc.printToString(*SM);
     char delims[] = ":";
@@ -349,6 +352,26 @@ public:
     }
     return true;
   }
+  bool VisitMemberExpr(MemberExpr *me)
+  {
+    Expr *ep = me->getBase()->IgnoreImpCasts();
+    if (isa<DeclRefExpr>(ep))
+    {
+      DeclRefExpr *dre = cast<DeclRefExpr>(ep);
+      QualType qt = dre->getType();
+      //qt.dump();
+      if (qt->isPointerType())
+      {
+        SourceLocation beginLoc = me->getBeginLoc();
+        string beginLocString = beginLoc.printToString(*SM);
+        std::string pname = dre->getNameInfo().getAsString();
+        Pointer *p = pc.getPointerByName(pname);
+        pc.nullDerefCheck(*p, beginLocString);
+      }
+    }
+    return true;
+  }
+
   bool VisitArraySubscriptExpr(ArraySubscriptExpr *ase)
   {
     SourceLocation beginLoc = ase->getBeginLoc();
@@ -362,6 +385,14 @@ public:
     {
       DeclRefExpr *ldre = cast<DeclRefExpr>(lhs);
       arrName = ldre->getNameInfo().getAsString();
+      Pointer *p = pc.getPointerByName(arrName);
+      if (p)
+      {
+        SourceLocation beginLoc = lhs->getBeginLoc();
+        string beginLocString = beginLoc.printToString(*SM);
+        pc.nullDerefCheck(*p, beginLocString);
+        return true;
+      }
       QualType qt = ldre->getType();
       std::string qas = qt.getAsString();
       //cout<<qt.getAsString()<<'\n';
@@ -474,7 +505,15 @@ public:
     }
     return true;
   }
-
+  bool VisitIfStmt(IfStmt *is)
+  {
+    if (isa<BinaryOperator>(is->getCond()))
+    {
+      BinaryOperator *BO = cast<BinaryOperator>(is->getCond());
+      ifAvoid.insert(BO);
+    }
+    return true;
+  }
   bool VisitEnumDecl(EnumDecl *ed)
   {
     string enumName = ed->getNameAsString();
@@ -488,6 +527,7 @@ private:
   FuncChecker fc;
   SwitchChecker swchecker;
   SpaceChecker spchecker;
+  std::set<BinaryOperator *> ifAvoid;
 };
 
 class MyASTConsumer : public ASTConsumer
