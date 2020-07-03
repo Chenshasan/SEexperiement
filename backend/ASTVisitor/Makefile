@@ -1,5 +1,5 @@
-LLVM_SRC_PATH := /home/yzg/llvm/include
-LLVM_BUILD_PATH := /home/yzg/llvm
+LLVM_SRC_PATH := /home/calvinliu/Desktop/llvm/include
+LLVM_BUILD_PATH := /home/calvinliu/Desktop/llvm
 LLVM_BIN_PATH 	:= $(LLVM_BUILD_PATH)/bin
 
 $(info -----------------------------------------------)
@@ -8,7 +8,7 @@ $(info Using LLVM_BUILD_PATH = $(LLVM_BUILD_PATH))
 $(info Using LLVM_BIN_PATH = $(LLVM_BIN_PATH))
 $(info -----------------------------------------------)
 
-CXX := clang++
+CXX := /home/calvinliu/Desktop/llvm/bin/clang++
 CXXFLAGS := -fno-rtti -O0 -g
 PLUGIN_CXXFLAGS := -fpic
 
