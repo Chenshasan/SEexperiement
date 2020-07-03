@@ -23,6 +23,7 @@
 #include "./FunctionChecker/functionChecker.h"
 #include "./SwitchChecker/switchChecker.h"
 #include "./SpaceChecker/spaceChecker.h"
+#include "./SlowMemoryChecker/slowMemoryChecker.h"
 #include "./Common/errNo.h"
 
 using namespace clang;
@@ -32,7 +33,9 @@ using namespace std;
 
 SourceManager *SM;
 ASTContext *CTX;
-int ForStmtEndLine = 0;
+int ForStmtEndLine = -1;
+int WhileStmtEndLine = -1;
+CompilerInstance TheCompInst;
 int Pointer::numsOfPointer;
 std::string curFuncName;
 std::ofstream Printer::of;
@@ -83,9 +86,29 @@ public:
     return true;
   }
 
+  bool VisitWhileStmt(WhileStmt *ws)
+  {
+    smchecker.WhileStmtEndLine = smchecker.findWhileStmtEndLine(ws);
+    smchecker.inWhileStmt=true;
+    Expr *cond = ws->getCond();
+    smchecker.fscl.getCondLoc(cond);
+    //cond->dump();
+    return true;
+  }
+  bool VisitDoStmt(DoStmt *ds)
+  {
+    smchecker.DoWhileStmtEndLine = smchecker.findDoWhileStmtEndLine(ds);
+    smchecker.inDoWhileStmt=true;
+    Expr *cond = ds->getCond();
+    smchecker.DoWhileCond = cond;
+    smchecker.fscl.getCondLoc(cond);
+    //cond->dump();
+    return true;
+  }
   bool VisitStmt(Stmt *s)
   {
     // Only care about For statements.
+    smchecker.setFlags(s);
     if (isa<ForStmt>(s))
     {
       ForStmt *ForStatement = cast<ForStmt>(s);
@@ -99,6 +122,13 @@ public:
       tmp = strtok((char *)endLocString.c_str(), delims);
       tmp = strtok(NULL, delims);
       ForStmtEndLine = atoi(tmp);
+
+      ForStmtEndLine = smchecker.findForStmtEndLine(ForStatement);
+      smchecker.inForStmt=true;
+      smchecker.ForStmtEndLine=ForStmtEndLine;
+      Expr *cond = ForStatement->getCond();
+      smchecker.fscl.getCondLoc(cond);
+
       Stmt::child_range range = body->children();
       for (Stmt::child_iterator r = range.begin(); r != range.end(); r++)
       {
@@ -137,6 +167,8 @@ public:
         //   pc.pprint(ssr.str());
         // }
         VarDecl *vd = cast<VarDecl>(dcl);
+
+        smchecker.isVarDeclInForHead(vd);
 
         spchecker.bigVariableCheck(vd);
 
@@ -243,6 +275,9 @@ public:
     tmp = strtok((char *)beginLocString.c_str(), delims);
     tmp = strtok(NULL, delims);
     int BinaryOperatorLine = atoi(tmp);
+
+    smchecker.BinaryOperationCheck(stmt,BinaryOperatorLine,ForStmtEndLine,WhileStmtEndLine);
+
     if (BinaryOperatorLine > ForStmtEndLine)
     {
       //pointer assign?
@@ -298,55 +333,7 @@ public:
       //std::cout << "ASSIGN POINTER:" << lname << " " << rname << std::endl;
       return true;
     }
-    PresumedLoc PLoc = (*SM).getPresumedLoc(beginLoc);
-    const char *fname = PLoc.getFilename();
-    int line = PLoc.getLine();
-    int col = PLoc.getColumn();
-    Expr *lhs = stmt->getLHS()->IgnoreImpCasts();
-    Expr *rhs = stmt->getRHS()->IgnoreImpCasts();
-    QualType ltype = lhs->getType();
-    QualType rtype = rhs->getType();
-    if (ltype->isPointerType())
-    {
-      ltype = ltype->getPointeeType();
-    }
-    if (rtype->isPointerType())
-    {
-      rtype = rtype->getPointeeType();
-    }
-    CharUnits lcu = CTX->getTypeSizeInChars(ltype);
-    int lsize = lcu.getQuantity();
-    CharUnits rcu = CTX->getTypeSizeInChars(rtype);
-    int rsize = rcu.getQuantity();
 
-    if (lsize <= 2)
-    {
-#ifdef OOP
-      printf("SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col, ltype.getAsString().c_str(), lsize);
-      char tmpwarn[100];
-      sprintf(tmpwarn, "SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col, ltype.getAsString().c_str(), lsize);
-      std::string tmpwarns(tmpwarn);
-      pc.pprint(tmpwarns);
-#else
-      string warns = lhs->getBeginLoc().printToString(*SM) + ':' + static_cast<char>('0' + SlowMemoryOper) + '\n';
-      pc.pprint(warns);
-      std::cout << warns;
-#endif
-    }
-    else if (rsize <= 2)
-    {
-#ifdef OOP
-      printf("SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col, rtype.getAsString().c_str(), rsize);
-      char tmpwarn[100];
-      sprintf(tmpwarn, "SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col, rtype.getAsString().c_str(), rsize);
-      std::string tmpwarns(tmpwarn);
-      pc.pprint(tmpwarns);
-#else
-      string warns = rhs->getBeginLoc().printToString(*SM) + ':' + static_cast<char>('0' + SlowMemoryOper) + '\n';
-      pc.pprint(warns);
-      std::cout << warns;
-#endif
-    }
     return true;
   }
   bool VisitArraySubscriptExpr(ArraySubscriptExpr *ase)
@@ -488,6 +475,7 @@ private:
   FuncChecker fc;
   SwitchChecker swchecker;
   SpaceChecker spchecker;
+  SlowMemoryChecker smchecker;
 };
 
 class MyASTConsumer : public ASTConsumer
@@ -516,7 +504,6 @@ int main(int argc, char *argv[])
     return 1;
   }
 
-  CompilerInstance TheCompInst;
   TheCompInst.createDiagnostics();
 
   LangOptions &lo = TheCompInst.getLangOpts();
