@@ -23,7 +23,6 @@ class Pointer
  * isnewed表示这个指针是否是通过new关键字产生的
  * state表示指针的当前状态
  * id表示这个指针的标识数字（一般是被创造的次序）
- * ffPos表示这个指针第一次释放的位置
  */
 public:
     Pointer() = default;
@@ -46,8 +45,7 @@ public:
     _name(std::move(name)),
     _state(isUNPREDICTABLE),
     _id(numsOfPointer),
-    _isnewed(false),
-    _ffPos("")
+    _isnewed(false)
     {
         numsAdd();
     }
@@ -55,8 +53,7 @@ public:
     _name(std::move(name)),
     _state(ps),
     _id(numsOfPointer),
-    _isnewed(false),
-    _ffPos("")
+    _isnewed(false)
     {
         numsAdd();
     }
@@ -64,8 +61,7 @@ public:
     _name(std::move(name)),
     _state(ps),
     _id(numsOfPointer),
-    _isnewed(nw),
-    _ffPos("")
+    _isnewed(nw)
     {
         numsAdd();
     }
@@ -95,14 +91,6 @@ public:
     {
         _isnewed=b;
     }
-    void setffPos(const std::string& s)
-    {
-        _ffPos=s;
-    }
-    std::string getffPos() const
-    {
-        return _ffPos;
-    }
 /*
  * 操作符重载：根据id判断是不是相同的指针
  */
@@ -130,7 +118,6 @@ public:
     }
 private:
     std::string _name;
-    std::string _ffPos;
     bool _isnewed;
     int _state;
     int _id;

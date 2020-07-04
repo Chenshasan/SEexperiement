@@ -30,15 +30,57 @@ void SpaceChecker::bigVariableCheck(VarDecl *vd)
     cout << locString.c_str() << ':' << ' ' << "warning: variable" << ' ' << '\'' << qtstr << '\'' << ' ' << '(' << bitToMb(tsize) << "Mb" << ')' << ' ' << "is too big" << endl;
     ssr << locString.c_str() << ':' << ' ' << "warning: variable" << ' ' << '\'' << qtstr << '\'' << ' ' << '(' << bitToMb(tsize) << "Mb" << ')' << ' ' << "is too big" << endl;
 #else
-    cout << locString.c_str() << ':' << static_cast<char>('0' + SpaceProblem) << ':' << bitToMb(tsize) << endl;
-    ssr << locString.c_str() << ':' << static_cast<char>('0' + SpaceProblem) << ':' << bitToMb(tsize) << endl;
+    cout << locString.c_str() << ':' << static_cast<char>('0' + SpaceProblem) << endl;
+    ssr << locString.c_str() << ':' << static_cast<char>('0' + SpaceProblem) << endl;
 #endif
 
     pprint(ssr.str());
   }
 }
 
-double bitToMb(double bits)
+void SpaceChecker::bigFieldCheck(FieldDecl *fd)
+{
+  SourceLocation beginLoc = fd->getBeginLoc();
+  QualType qt = fd->getType();
+  uint64_t tsize = fd->getASTContext().getTypeSize(fd->getType());
+  if (tsize >= WARNING_TRIGGER_VARIABLE_SIZE)
+  {
+    string qtstr = qt.getAsString();
+    string locString = beginLoc.printToString(*SM);
+    stringstream ssr;
+
+#ifdef OOP
+    cout << locString.c_str() << ':' << ' ' << "warning: field" << ' ' << '\'' << qtstr << '\'' << ' ' << '(' << bitToMb(tsize) << "Mb" << ')' << ' ' << "is too big" << endl;
+    ssr << locString.c_str() << ':' << ' ' << "warning: field" << ' ' << '\'' << qtstr << '\'' << ' ' << '(' << bitToMb(tsize) << "Mb" << ')' << ' ' << "is too big" << endl;
+#else
+    cout << locString.c_str() << ':' << static_cast<char>('0' + SpaceProblem) << endl;
+    ssr << locString.c_str() << ':' << static_cast<char>('0' + SpaceProblem) << endl;
+#endif
+
+    pprint(ssr.str());
+  }
+}
+
+void SpaceChecker::unusedFieldCheck()
+{
+  stringstream ssr;
+  for (auto const &field : field_use_list)
+  {
+    if (field.isUsed == false)
+    {
+#ifdef OOP
+      cout << field.location << ':' << ' ' << "warning: field" << ' ' << '\'' << field.name << '\'' << ' ' << "is never used" << endl;
+      ssr << field.location << ':' << ' ' << "warning: field" << ' ' << '\'' << field.name << '\'' << ' ' << "is never used" << endl;
+#else
+      cout << field.location << ':' << static_cast<char>('0' + SpaceProblem) << endl;
+      ssr << field.location << ':' << static_cast<char>('0' + SpaceProblem) << endl;
+#endif
+      pprint(ssr.str());
+    }
+  }
+}
+
+double SpaceChecker::bitToMb(double bits)
 {
   return bits / 8 / 1024 / 1024;
 }

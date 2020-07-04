@@ -23,6 +23,7 @@
 #include "./FunctionChecker/functionChecker.h"
 #include "./SwitchChecker/switchChecker.h"
 #include "./SpaceChecker/spaceChecker.h"
+#include "./SlowMemoryChecker/slowMemoryChecker.h"
 #include "./Common/errNo.h"
 
 using namespace clang;
@@ -32,11 +33,15 @@ using namespace std;
 
 SourceManager *SM;
 ASTContext *CTX;
-int ForStmtEndLine = 0;
+int ForStmtEndLine = -1;
+int WhileStmtEndLine = -1;
+CompilerInstance TheCompInst;
 int Pointer::numsOfPointer;
 std::string curFuncName;
 std::ofstream Printer::of;
 unordered_map<string, EnumDecl *> EDs;
+vector<SwitchLocation> switch_loc_list;
+vector<Field> field_use_list;
 
 // By implementing RecursiveASTVisitor, we can specify which AST nodes
 // we're interested in by overriding relevant methods.
@@ -83,9 +88,29 @@ public:
     return true;
   }
 
+  bool VisitWhileStmt(WhileStmt *ws)
+  {
+    smchecker.WhileStmtEndLine = smchecker.findWhileStmtEndLine(ws);
+    smchecker.inWhileStmt=true;
+    Expr *cond = ws->getCond();
+    smchecker.fscl.getCondLoc(cond);
+    //cond->dump();
+    return true;
+  }
+  bool VisitDoStmt(DoStmt *ds)
+  {
+    smchecker.DoWhileStmtEndLine = smchecker.findDoWhileStmtEndLine(ds);
+    smchecker.inDoWhileStmt=true;
+    Expr *cond = ds->getCond();
+    smchecker.DoWhileCond = cond;
+    smchecker.fscl.getCondLoc(cond);
+    //cond->dump();
+    return true;
+  }
   bool VisitStmt(Stmt *s)
   {
     // Only care about For statements.
+    smchecker.setFlags(s);
     if (isa<ForStmt>(s))
     {
       ForStmt *ForStatement = cast<ForStmt>(s);
@@ -99,6 +124,13 @@ public:
       tmp = strtok((char *)endLocString.c_str(), delims);
       tmp = strtok(NULL, delims);
       ForStmtEndLine = atoi(tmp);
+
+      ForStmtEndLine = smchecker.findForStmtEndLine(ForStatement);
+      smchecker.inForStmt=true;
+      smchecker.ForStmtEndLine=ForStmtEndLine;
+      Expr *cond = ForStatement->getCond();
+      smchecker.fscl.getCondLoc(cond);
+
       Stmt::child_range range = body->children();
       for (Stmt::child_iterator r = range.begin(); r != range.end(); r++)
       {
@@ -138,6 +170,8 @@ public:
         // }
         VarDecl *vd = cast<VarDecl>(dcl);
 
+        smchecker.isVarDeclInForHead(vd);
+
         spchecker.bigVariableCheck(vd);
 
         QualType qt = vd->getType();
@@ -170,7 +204,7 @@ public:
             }
             else
             {
-              p = new Pointer(pname, isUNPREDICTABLE);
+              p = new Pointer(pname, isVALID);
               pc.declPointer(p);
             }
           }
@@ -236,9 +270,6 @@ public:
   bool VisitBinaryOperator(BinaryOperator *stmt)
   {
     //stmt->dump();
-    //skip if conditions
-    if (ifAvoid.find(stmt) != ifAvoid.end())
-      return true;
     SourceLocation beginLoc = stmt->getBeginLoc();
     string beginLocString = beginLoc.printToString(*SM);
     char delims[] = ":";
@@ -246,6 +277,9 @@ public:
     tmp = strtok((char *)beginLocString.c_str(), delims);
     tmp = strtok(NULL, delims);
     int BinaryOperatorLine = atoi(tmp);
+
+    smchecker.BinaryOperationCheck(stmt,BinaryOperatorLine,ForStmtEndLine,WhileStmtEndLine);
+
     if (BinaryOperatorLine > ForStmtEndLine)
     {
       //pointer assign?
@@ -301,77 +335,9 @@ public:
       //std::cout << "ASSIGN POINTER:" << lname << " " << rname << std::endl;
       return true;
     }
-    PresumedLoc PLoc = (*SM).getPresumedLoc(beginLoc);
-    const char *fname = PLoc.getFilename();
-    int line = PLoc.getLine();
-    int col = PLoc.getColumn();
-    Expr *lhs = stmt->getLHS()->IgnoreImpCasts();
-    Expr *rhs = stmt->getRHS()->IgnoreImpCasts();
-    QualType ltype = lhs->getType();
-    QualType rtype = rhs->getType();
-    if (ltype->isPointerType())
-    {
-      ltype = ltype->getPointeeType();
-    }
-    if (rtype->isPointerType())
-    {
-      rtype = rtype->getPointeeType();
-    }
-    CharUnits lcu = CTX->getTypeSizeInChars(ltype);
-    int lsize = lcu.getQuantity();
-    CharUnits rcu = CTX->getTypeSizeInChars(rtype);
-    int rsize = rcu.getQuantity();
 
-    if (lsize <= 2)
-    {
-#ifdef OOP
-      printf("SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col, ltype.getAsString().c_str(), lsize);
-      char tmpwarn[100];
-      sprintf(tmpwarn, "SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col, ltype.getAsString().c_str(), lsize);
-      std::string tmpwarns(tmpwarn);
-      pc.pprint(tmpwarns);
-#else
-      string warns = lhs->getBeginLoc().printToString(*SM) + ':' + static_cast<char>('0' + SlowMemoryOper) + '\n';
-      pc.pprint(warns);
-      std::cout << warns;
-#endif
-    }
-    else if (rsize <= 2)
-    {
-#ifdef OOP
-      printf("SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col, rtype.getAsString().c_str(), rsize);
-      char tmpwarn[100];
-      sprintf(tmpwarn, "SlowMemoryOperation::%s:%d:%d Type:%s SizeOfType:%d\n", fname, line, col, rtype.getAsString().c_str(), rsize);
-      std::string tmpwarns(tmpwarn);
-      pc.pprint(tmpwarns);
-#else
-      string warns = rhs->getBeginLoc().printToString(*SM) + ':' + static_cast<char>('0' + SlowMemoryOper) + '\n';
-      pc.pprint(warns);
-      std::cout << warns;
-#endif
-    }
     return true;
   }
-  bool VisitMemberExpr(MemberExpr *me)
-  {
-    Expr *ep = me->getBase()->IgnoreImpCasts();
-    if (isa<DeclRefExpr>(ep))
-    {
-      DeclRefExpr *dre = cast<DeclRefExpr>(ep);
-      QualType qt = dre->getType();
-      //qt.dump();
-      if (qt->isPointerType())
-      {
-        SourceLocation beginLoc = me->getBeginLoc();
-        string beginLocString = beginLoc.printToString(*SM);
-        std::string pname = dre->getNameInfo().getAsString();
-        Pointer *p = pc.getPointerByName(pname);
-        pc.nullDerefCheck(*p, beginLocString);
-      }
-    }
-    return true;
-  }
-
   bool VisitArraySubscriptExpr(ArraySubscriptExpr *ase)
   {
     SourceLocation beginLoc = ase->getBeginLoc();
@@ -415,6 +381,7 @@ public:
       if (arrMaxSize <= indexSize)
       {
         stringstream ssr;
+        #ifdef OOP
         cout << "Warning: Array out-of-bound access :";
         cout << arrName;
         cout << ":Try to access index " << indexSize;
@@ -427,6 +394,12 @@ public:
         ssr << " while the max size is:" << arrMaxSize;
         ssr << ":" << beginLocString << endl;
         pc.pprint(ssr.str());
+        #else
+        string mes;
+        mes=beginLocString+':'+ static_cast<char>('0' +ArrayOutOfBound)+':'+arrName+'\n';
+        cout<<mes;
+        pc.pprint(mes);
+        #endif
       }
     }
     return true;
@@ -491,33 +464,68 @@ public:
     }
     return true;
   }
-  bool VisitSwitchStmt(SwitchStmt *s)
+  bool VisitSwitchStmt(SwitchStmt* s)
   {
+    SourceLocation beginLoc = s->getBeginLoc();
+    string stringLoc = beginLoc.printToString(*SM);
+    size_t pos_of_first = stringLoc.find_first_of(':');
+    size_t pos_of_second = stringLoc.find_last_of(':');
+
+    string filename = stringLoc.substr(0, pos_of_first);
+    string row = stringLoc.substr(pos_of_first + 1, pos_of_second - pos_of_first - 1);
+    string col = stringLoc.substr(pos_of_second + 1);
+    SwitchLocation switch_loc("", filename, atoi(row.c_str()), atoi(col.c_str()));
+    switch_loc_list.push_back(switch_loc);
+
     if (isa<EnumType>(s->getCond()->IgnoreImpCasts()->getType()))
     {
-      //cout << s->getCond()->IgnoreImpCasts()->getType().getAsString() << endl;
       swchecker.enumIncompleteCheck(s);
     }
     else
     {
-      //cout << s->getCond()->IgnoreImpCasts()->getType().getAsString() << endl;
       swchecker.typeMismatchCheck(s); // checker
     }
     return true;
   }
-  bool VisitIfStmt(IfStmt *is)
-  {
-    if (isa<BinaryOperator>(is->getCond()))
-    {
-      BinaryOperator *BO = cast<BinaryOperator>(is->getCond());
-      ifAvoid.insert(BO);
-    }
-    return true;
-  }
+
   bool VisitEnumDecl(EnumDecl *ed)
   {
     string enumName = ed->getNameAsString();
     EDs[enumName] = ed;
+    return true;
+  }
+  bool VisitCXXRecordDecl(CXXRecordDecl *crd)
+  {
+    if (crd->isStruct())
+    {
+      for (auto const &field : crd->fields())
+      {
+        spchecker.bigFieldCheck(field); // checker
+
+        string field_type = field->getType().getAsString();
+        string field_name = field->getNameAsString();
+        SourceLocation beginLoc = field->getBeginLoc();
+        string field_location = beginLoc.printToString(*SM);
+        Field f(field_type, field_name, field_location, false);
+        field_use_list.push_back(f);
+      }
+    }
+    return true;
+  }
+
+  bool VisitMemberExpr(MemberExpr *me)
+  {
+    string member_type = me->getType().getAsString();
+    string member_name = me->getMemberNameInfo().getAsString();
+    for (auto &field : field_use_list)
+    {
+      if (
+          field.type.compare(member_type) == 0 &&
+          field.name.compare(member_name) == 0)
+      {
+        field.isUsed = true;
+      }
+    }
     return true;
   }
 
@@ -527,7 +535,7 @@ private:
   FuncChecker fc;
   SwitchChecker swchecker;
   SpaceChecker spchecker;
-  std::set<BinaryOperator *> ifAvoid;
+  SlowMemoryChecker smchecker;
 };
 
 class MyASTConsumer : public ASTConsumer
@@ -556,7 +564,6 @@ int main(int argc, char *argv[])
     return 1;
   }
 
-  CompilerInstance TheCompInst;
   TheCompInst.createDiagnostics();
 
   LangOptions &lo = TheCompInst.getLangOpts();
@@ -598,6 +605,9 @@ int main(int argc, char *argv[])
   // const RewriteBuffer *RewriteBuf =
   //     TheRewriter.getRewriteBufferFor(SourceMgr.getMainFileID());
   // llvm::outs() << std::string(RewriteBuf->begin(), RewriteBuf->end());
+
+  SwitchChecker::floatAndStringCheck(argv[1]);
+  SpaceChecker::unusedFieldCheck();
 
   return 0;
 }

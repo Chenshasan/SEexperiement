@@ -39,7 +39,7 @@ int PointerChecker::freeCheck(const Pointer &p2free, const std::string &locStrin
         pprint(msg);
         //return -1;
 #else
-        std::string msg = locString + ':' + static_cast<char>('0' + DoubleFree) + ':' + p2free.getName() + ':' + p2free.getffPos() + '\n';
+        std::string msg = locString + ':' + static_cast<char>('0' + DoubleFree) + ':' + p2free.getName() + '\n';
         pprint(msg);
         std::cout << msg;
 #endif
@@ -139,7 +139,6 @@ void PointerChecker::freePointer(const Pointer &p2free, bool &success, const std
                 {
                     pMap->at(i)->setState(isFREED);
                     pMap->at(i)->setisNew(true);
-                    pMap->at(i)->setffPos(locString);
                 }
             }
         success = true;
@@ -162,3 +161,4 @@ void PointerChecker::stepInFunc(const std::string &funcName)
     IM->clear();
     pIndexMaps[currentFuncName] = IM;
 }
+

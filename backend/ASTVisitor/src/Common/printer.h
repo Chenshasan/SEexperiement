@@ -22,7 +22,7 @@ public:
  * 输出函数
  * @param:待打印的字符串
  */
-    void pprint(const std::string &s)
+    static void pprint(const std::string &s)
     {
         of << s;
     }
