@@ -2,7 +2,6 @@
 
 int main()
 {
-    int a[100000000];
-
+    int a[1000000];
     return 0;
 }
