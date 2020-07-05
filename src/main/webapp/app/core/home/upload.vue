@@ -1,24 +1,31 @@
 <template>
     <div style="height: 100%">
         <div id="wrapper" v-if="!this.loading" style="background-color: white">
-            <div class="uploadDiv1">
-                <uploader
-                    ref="uploader"
-                    :options="uploadOptions1"
-                    :autoStart="true"
-                    @file-added="onFileAdded1"
-                    @file-success="onFileSuccess1"
-                    @file-progress="onFileProgress1"
-                    @file-error="onFileError1"
-                    class="uploader-app"
-                >
-                    <uploader-unsupport></uploader-unsupport>
-                    <uploader-drop>
-                        <uploader-btn style="margin-right:20px;" :attrs="attrs">选择文件</uploader-btn>
-                        <uploader-btn :attrs="attrs" directory>选择文件夹</uploader-btn>
-                    </uploader-drop>
-                    <uploader-list></uploader-list>
-                </uploader>
+            <div class="jumbotron1 masthead1">
+                <h1>XAnalysis</h1>
+                <h2>简洁、直观的静态分析工具，让代码更安全、简单。</h2>
+                <hr>
+                <h3 style="font-size: 25px;font-weight: normal;margin-top: 30px">请上传您需要检测的CPP代码文件</h3>
+                <div class="uploadDiv1" style="padding-left: 320px;padding-right: 320px;margin-top: 30px">
+                    <uploader
+                        ref="uploader"
+                        :options="uploadOptions1"
+                        :autoStart="true"
+                        @file-added="onFileAdded1"
+                        @file-success="onFileSuccess1"
+                        @file-progress="onFileProgress1"
+                        @file-error="onFileError1"
+                        class="uploader-app"
+                        style="background-color: #035aa6"
+                    >
+                        <uploader-unsupport></uploader-unsupport>
+                        <uploader-drop sytle="background: linear-gradient(45deg,#43d8c9,#035aa6);">
+                            <uploader-btn style="margin-right:20px;" :attrs="attrs">选择文件</uploader-btn>
+                            <uploader-btn :attrs="attrs" directory>选择文件夹</uploader-btn>
+                        </uploader-drop>
+                        <uploader-list></uploader-list>
+                    </uploader>
+                </div>
             </div>
         </div>
 
@@ -85,6 +92,7 @@ export default{
         this.loading=true
     },
     onFileSuccess1(rootFile, file, response, chunk) {
+        this.loading=true
         let res = JSON.parse(response);
         console.log(res)
         this.$store.commit('setPassage',res.content)
@@ -92,41 +100,15 @@ export default{
         this.$router.push({name: 'Result'})
     },
     onFileError1(rootFile, file, response, chunk) {
-    },
-    onFileAdded2(file) {
-      console.log(file);
-    },
-    onFileProgress2(rootFile, file, chunk) {},
-    onFileSuccess2(rootFile, file, response, chunk) {
-      let res = JSON.parse(response);
-      if (res.code == 1) {
-        return;
-      }
-      if (res.code == 205) {
-        const formData = new FormData();
-        formData.append("identifier", file.uniqueIdentifier);
-        formData.append("filename", file.name);
-        merge(formData).then(response => {});
-      } else {
-      }
-    },
-    onFileError2(rootFile, file, response, chunk) {
-      this.$message({
-        message: response,
-        type: "error"
-      });
-    },
+    }
   }
-
-
 }
 </script>
 
 <style scoped>
     #wrapper{
         box-shadow: 0 3px 7px rgba(0,0,0,.75), 0 -3px 7px rgba(0,0,0,.2);
-        padding: 100px 30px;
-        margin-top: 200px;
+        padding: 30px;
     }
 
     #wrapper1{
@@ -134,6 +116,18 @@ export default{
         height: 100%;
         box-shadow: 0 3px 7px rgba(0,0,0,.75), 0 -3px 7px rgba(0,0,0,.2);
         padding: 40px 40px 15px;
+    }
+
+    .jumbotron1 {
+        position: relative;
+        padding: 160px 160px;
+        color: #fff;
+        text-align: center;
+        text-shadow: 0 1px 3px rgba(0,0,0,.4), 0 0 30px rgba(0,0,0,.075);
+        background: #020031;
+        background: linear-gradient(45deg,#43d8c9,#035aa6);
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#020031",endColorstr="#6d3353",GradientType=1);
+        box-shadow: inset 0 3px 7px rgba(255,255,255,.75), inset 0 -3px 7px rgba(255,255,255,.2);
     }
 
     .jumbotron {
@@ -146,6 +140,20 @@ export default{
         filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#020031",endColorstr="#6d3353",GradientType=1);
         box-shadow: inset 0 3px 7px rgba(255,255,255,.75), inset 0 -3px 7px rgba(255,255,255,.2);
     }
+
+    .masthead1 h1 {
+        font-size: 110px;
+        font-weight:bold;
+        margin-bottom: 30px;
+        color:#ffffff;
+    }
+
+    .masthead1 h2 {
+        color:#ffffff;
+        font-weight:normal;
+        margin-bottom:30px;
+    }
+
 
     #link{
         color: rgba(0, 0, 0, 0.99);
