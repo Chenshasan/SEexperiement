@@ -1,31 +1,29 @@
 import Component from 'vue-class-component';
 import { Inject, Vue } from 'vue-property-decorator';
 import LoginService from '@/account/login.service';
+import LoginForm from '../../account/login-form/login-form.vue';
 
-@Component
-export default class Home extends Vue {
-  data() {
-    return {
-      uploadOptions1: {
-        target: '//localhost:8080/upload/single', //上传的接口
-        testChunks: false, //是否开启服务器分片校验
-        fileParameterName: 'file', //默认的文件参数名
-        headers: {},
-        query() {},
-        categaryMap: {
-          //用于限制上传的类型
-          image: ['gif', 'jpg', 'jpeg', 'png', 'bmp'],
-          document: ['cpp']
-        }
-      }
-    };
+@Component({
+  components: {
+    'login-form': LoginForm
   }
+})
+export default class Home extends Vue {
+  private loginFormVisible: boolean = false;
 
   @Inject('loginService')
   private loginService: () => LoginService;
 
   public openLogin(): void {
     this.loginService().openLogin((<any>this).$root);
+  }
+
+  public jump() {
+    if (this.authenticated) {
+      this.$router.push('/upload');
+    } else {
+      this.openLogin();
+    }
   }
 
   public get authenticated(): boolean {

@@ -6,14 +6,16 @@ export const accountStore: Module<any, any> = {
     userIdentity: null,
     authenticated: false,
     ribbonOnProfiles: '',
-    activeProfiles: ''
+    activeProfiles: '',
+    loginForm: false
   },
   getters: {
     logon: state => state.logon,
     account: state => state.userIdentity,
     authenticated: state => state.authenticated,
     activeProfiles: state => state.activeProfiles,
-    ribbonOnProfiles: state => state.ribbonOnProfiles
+    ribbonOnProfiles: state => state.ribbonOnProfiles,
+    loginForm: state => state.loginForm
   },
   mutations: {
     authenticate(state) {
@@ -34,6 +36,9 @@ export const accountStore: Module<any, any> = {
     },
     setRibbonOnProfiles(state, ribbon) {
       state.ribbonOnProfiles = ribbon;
+    },
+    setLoginForm(state, loginForm) {
+      state.loginForm = loginForm;
     }
   }
 };

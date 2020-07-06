@@ -40,6 +40,8 @@ int Pointer::numsOfPointer;
 std::string curFuncName;
 std::ofstream Printer::of;
 unordered_map<string, EnumDecl *> EDs;
+vector<SwitchLocation> switch_loc_list;
+vector<Field> field_use_list;
 
 // By implementing RecursiveASTVisitor, we can specify which AST nodes
 // we're interested in by overriding relevant methods.
@@ -167,9 +169,7 @@ public:
         //   pc.pprint(ssr.str());
         // }
         VarDecl *vd = cast<VarDecl>(dcl);
-
         smchecker.isVarDeclInForHead(vd);
-
         spchecker.bigVariableCheck(vd);
 
         QualType qt = vd->getType();
@@ -349,6 +349,14 @@ public:
     {
       DeclRefExpr *ldre = cast<DeclRefExpr>(lhs);
       arrName = ldre->getNameInfo().getAsString();
+      Pointer *p = pc.getPointerByName(arrName);
+      if (p)
+      {
+        SourceLocation beginLoc = lhs->getBeginLoc();
+        string beginLocString = beginLoc.printToString(*SM);
+        pc.nullDerefCheck(*p, beginLocString);
+        return true;
+      }
       QualType qt = ldre->getType();
       std::string qas = qt.getAsString();
       //cout<<qt.getAsString()<<'\n';
@@ -371,6 +379,7 @@ public:
       if (arrMaxSize <= indexSize)
       {
         stringstream ssr;
+        #ifdef OOP
         cout << "Warning: Array out-of-bound access :";
         cout << arrName;
         cout << ":Try to access index " << indexSize;
@@ -383,6 +392,12 @@ public:
         ssr << " while the max size is:" << arrMaxSize;
         ssr << ":" << beginLocString << endl;
         pc.pprint(ssr.str());
+        #else
+        string mes;
+        mes=beginLocString+':'+ static_cast<char>('0' +ArrayOutOfBound)+':'+arrName+'\n';
+        cout<<mes;
+        pc.pprint(mes);
+        #endif
       }
     }
     return true;
@@ -447,16 +462,25 @@ public:
     }
     return true;
   }
-  bool VisitSwitchStmt(SwitchStmt *s)
+  bool VisitSwitchStmt(SwitchStmt* s)
   {
+    SourceLocation beginLoc = s->getBeginLoc();
+    string stringLoc = beginLoc.printToString(*SM);
+    size_t pos_of_first = stringLoc.find_first_of(':');
+    size_t pos_of_second = stringLoc.find_last_of(':');
+
+    string filename = stringLoc.substr(0, pos_of_first);
+    string row = stringLoc.substr(pos_of_first + 1, pos_of_second - pos_of_first - 1);
+    string col = stringLoc.substr(pos_of_second + 1);
+    SwitchLocation switch_loc("", filename, atoi(row.c_str()), atoi(col.c_str()));
+    switch_loc_list.push_back(switch_loc);
+
     if (isa<EnumType>(s->getCond()->IgnoreImpCasts()->getType()))
     {
-      //cout << s->getCond()->IgnoreImpCasts()->getType().getAsString() << endl;
       swchecker.enumIncompleteCheck(s);
     }
     else
     {
-      //cout << s->getCond()->IgnoreImpCasts()->getType().getAsString() << endl;
       swchecker.typeMismatchCheck(s); // checker
     }
     return true;
@@ -466,6 +490,41 @@ public:
   {
     string enumName = ed->getNameAsString();
     EDs[enumName] = ed;
+    return true;
+  }
+  bool VisitCXXRecordDecl(CXXRecordDecl *crd)
+  {
+    if (crd->isStruct())
+    {
+      for (auto const &field : crd->fields())
+      {
+        spchecker.bigFieldCheck(field); // checker
+
+        string field_type = field->getType().getAsString();
+        string field_name = field->getNameAsString();
+        SourceLocation beginLoc = field->getBeginLoc();
+        string field_location = beginLoc.printToString(*SM);
+        Field f(field_type, field_name, field_location, false);
+        field_use_list.push_back(f);
+      }
+    }
+    return true;
+  }
+
+  bool VisitMemberExpr(MemberExpr *me)
+  {
+
+    string member_type = me->getType().getAsString();
+    string member_name = me->getMemberNameInfo().getAsString();
+    for (auto &field : field_use_list)
+    {
+      if (
+          field.type.compare(member_type) == 0 &&
+          field.name.compare(member_name) == 0)
+      {
+        field.isUsed = true;
+      }
+    }
     return true;
   }
 
@@ -547,6 +606,9 @@ int main(int argc, char *argv[])
   // const RewriteBuffer *RewriteBuf =
   //     TheRewriter.getRewriteBufferFor(SourceMgr.getMainFileID());
   // llvm::outs() << std::string(RewriteBuf->begin(), RewriteBuf->end());
+
+  SwitchChecker::floatAndStringCheck(argv[1]);
+  SpaceChecker::unusedFieldCheck();
 
   return 0;
 }

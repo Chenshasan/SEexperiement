@@ -1,6 +1,6 @@
 <template>
     <div>
-    <b-navbar toggleable="md" type="dark" class="jh-navbar fixed-top">
+    <b-navbar type="dark" class="jh-navbar fixed-top">
         <div class="jh-logo-container float-left">
             <b-navbar-toggle right class="jh-navbar-toggler d-lg-none float-right" href="javascript:void(0);"  data-toggle="collapse" target="header-tabs" aria-expanded="false" aria-label="Toggle navigation">
                 <font-awesome-icon icon="bars" />
@@ -12,22 +12,21 @@
         </div>
         <b-collapse is-nav id="header-tabs">
             <b-navbar-nav class="ml-auto">
+
                 <b-nav-item to="/" exact>
                     <span>
                         <font-awesome-icon icon="home" />
                         <span v-text="$t('global.menu.home')">Home</span>
                     </span>
                 </b-nav-item>
-                <b-nav-item-dropdown
-                    id="entity-menu"
-                    v-if="authenticated"
-                    active-class="active" class="pointer">
-                    <span slot="button-content" class="navbar-dropdown-menu">
-                        <font-awesome-icon icon="th-list" />
-                        <span v-text="$t('global.menu.entities.main')">Entities</span>
+
+                <b-nav-item to="/record" exact v-if="authenticated">
+                    <span>
+                        <font-awesome-icon icon="book" />
+                        <span>检测记录</span>
                     </span>
-                    <!-- jhipster-needle-add-entity-to-menu - JHipster will add entities to the menu here -->
-                </b-nav-item-dropdown>
+                </b-nav-item>
+
                 <b-nav-item-dropdown
                     id="admin-menu"
                     v-if="hasAnyAuthority('ROLE_ADMIN')"
@@ -67,6 +66,7 @@
                         <span v-text="$t('global.menu.admin.apidocs')">API</span>
                     </b-dropdown-item>
                 </b-nav-item-dropdown>
+
                 <b-nav-item-dropdown id="languagesnavBarDropdown" right v-if="languages && Object.keys(languages).length > 1">
                     <span slot="button-content">
                         <font-awesome-icon icon="flag" />
@@ -77,6 +77,7 @@
                         {{value.name}}
                     </b-dropdown-item>
                 </b-nav-item-dropdown>
+
                 <b-nav-item-dropdown
                     right
                     href="javascript:void(0);"
@@ -111,6 +112,7 @@
                         <span v-text="$t('global.menu.account.register')">Register</span>
                     </b-dropdown-item>
                 </b-nav-item-dropdown>
+
             </b-navbar-nav>
         </b-collapse>
     </b-navbar>
@@ -132,7 +134,7 @@
 
 .jh-navbar {
     background-color: #ffffff;
-    padding: 0.2em 1em;
+    padding: 10px 2em;
     box-shadow: 0 3px 7px rgba(0,0,0,.55);
 }
 
@@ -153,9 +155,6 @@
   margin-left: 0.15em;
 }
 
-.jh-navbar ul.navbar-nav {
-  padding: 0.5em;
-}
 
 .jh-navbar .navbar-nav .nav-item {
   margin-left: 1.5rem;

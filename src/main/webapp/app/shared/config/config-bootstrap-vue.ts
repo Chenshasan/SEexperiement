@@ -7,6 +7,8 @@ import {
   BProgressBar,
   BPagination,
   BButton,
+  BListGroup,
+  BListGroupItem,
   BNavbar,
   BNavbarNav,
   BNavbarBrand,
@@ -31,6 +33,8 @@ export function initBootstrapVue(vue) {
   vue.component('b-alert', BAlert);
   vue.component('b-modal', BModal);
   vue.component('b-button', BButton);
+  vue.component('b-list-group', BListGroup);
+  vue.component('b-list-group-item', BListGroupItem);
   vue.component('b-navbar', BNavbar);
   vue.component('b-navbar-nav', BNavbarNav);
   vue.component('b-navbar-brand', BNavbarBrand);

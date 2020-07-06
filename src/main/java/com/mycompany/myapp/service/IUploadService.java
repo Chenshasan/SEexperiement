@@ -1,6 +1,7 @@
 package com.mycompany.myapp.service;
 
-import com.mycompany.myapp.vo.Chunk;
+//import com.mycompany.myapp.vo.Chunk;
+import org.h2.mvstore.Chunk;
 
 import java.util.Map;
 

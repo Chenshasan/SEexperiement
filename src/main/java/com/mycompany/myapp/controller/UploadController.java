@@ -1,10 +1,16 @@
 package com.mycompany.myapp.controller;
 
+import com.mycompany.myapp.domain.Record;
+import com.mycompany.myapp.repository.RecordRepository;
 import com.mycompany.myapp.service.IUploadService;
-import com.mycompany.myapp.vo.Chunk;
+//import com.mycompany.myapp.vo.Chunk;
+import com.mycompany.myapp.service.impl.CmdServiceImpl;
+import com.mycompany.myapp.vo.RecVO;
+import com.mycompany.myapp.vo.RecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,22 +21,26 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
-
-@RequestMapping("/upload")
 @RestController
+@RequestMapping("/upload")
 @Slf4j
 @CrossOrigin
+@Service
 public class UploadController {
 
     //private final static String CHUNK_FOLDER = "/Users/yangwei/resource/data/chunk";
-    private final static String SINGLE_FOLDER = "E:\\work\\resource";
+    private final static String SINGLE_FOLDER = "D:\\googleDownload";
 
     @Autowired
     private IUploadService uploadService;
+    @Autowired
+    private RecordRepository recordRepository;
+//    @Autowired
+//    private CmdService cmdService;
+
 
 //    @PostMapping("single")
 //    public void singleUpload(Chunk chunk) {
@@ -48,10 +58,14 @@ public class UploadController {
 //        }
 //    }
 
+
     @ResponseBody
     @RequestMapping("/single")
-    public void uploadCategory(HttpServletRequest request,
-                               @RequestParam("file") MultipartFile[] file){
+    public RecordVO uploadCategory(HttpServletRequest request,
+                                   @RequestParam("file") MultipartFile[] file){
+    Path path=null;
+    String name="Tmaybe2free.cpp";
+    String content="";
     if (file != null && file.length > 0) {
         for (MultipartFile temp : file) {
             try {
@@ -59,13 +73,39 @@ public class UploadController {
                 if (!Files.isWritable(Paths.get(SINGLE_FOLDER))) {
                     Files.createDirectories(Paths.get(SINGLE_FOLDER));
                 }
-                Path path = Paths.get(SINGLE_FOLDER,temp.getOriginalFilename());
+                path = Paths.get(SINGLE_FOLDER,temp.getOriginalFilename());
+                name=temp.getOriginalFilename();
                 Files.write(path, bytes);
+                //System.out.println(new String(bytes));
+                content=new String(bytes);
+                Path solution_path=Paths.get(SINGLE_FOLDER,temp.getOriginalFilename()+"_solution.txt");
+                Files.write(solution_path,bytes);
             } catch (IOException e) {
                 e.printStackTrace();
             }
             }
         }
+    String f=String.valueOf(path);
+    String out="yyy";
+    CmdServiceImpl.putFile(CmdServiceImpl.login("114.212.84.169","hsl","123qwe"),f,"/home/hsl/ASTVisitor/build");
+    out=CmdServiceImpl.execute(CmdServiceImpl.login("114.212.84.169","hsl","123qwe"),"./ASTVisitor/build/myASTVisitor ./ASTVisitor/build/"+name);
+    System.out.print(out);
+
+    RecordVO recordVO=new RecordVO();
+    recordVO.setContent(content);
+    recordVO.setWarning(out);
+
+        Date date=new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(calendar.DATE, 0);//如果把0修改为-1就代表昨天
+        date = calendar.getTime();
+        SimpleDateFormat format= new SimpleDateFormat("yyyy-MM-dd");
+        String dateString = format.format(date);
+        System.out.println(dateString);
+    Record record=new Record(4,out,name,content,dateString);
+    recordRepository.save(record);
+    return recordVO;
     }
 
 

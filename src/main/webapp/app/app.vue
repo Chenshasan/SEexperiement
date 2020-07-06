@@ -1,34 +1,28 @@
 <template>
-  <div id="app">
-    <div id="app-header">
-      <jhi-navbar></jhi-navbar>
+    <div style="background-color: #F6F6F6">
+        <div style="height: 50px">
+            <jhi-navbar></jhi-navbar>
+        </div>
+        <div id="app">
+            <router-view></router-view>
+        </div>
+        <b-modal id="login-page" hide-footer lazy>
+            <span slot="modal-title" id="login-title">Sign in</span>
+            <login-form></login-form>
+        </b-modal>
     </div>
-    <div class="container-fluid">
-      <div class="card jh-card">
-        <router-view></router-view>
-      </div>
-      <b-modal id="login-page" hide-footer lazy>
-        <span slot="modal-title" id="login-title" v-text="$t('login.title')">Sign in</span>
-        <login-form></login-form>
-      </b-modal>
-
-      <jhi-footer></jhi-footer>
-    </div>
-  </div>
 </template>
 
 <script lang="ts" src="./app.component.ts">
 </script>
 
-<style>
-    .container-fluid{
-        margin-top: 70px;
-    }
-
+<style scoped>
     #app{
-        width: 1350px;
-        margin-left: 70px;
-        box-shadow: 0 3px 7px rgba(0,0,0,.75), 0 -3px 7px rgba(0,0,0,.2);
+        width: 100%;
+        text-align: center;
+        padding-left: 70px;
+        padding-right: 70px;
+        padding-top: 30px;
     }
 
 </style>

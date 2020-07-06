@@ -9,6 +9,7 @@ import Router from 'vue-router';
 import { Authority } from '@/shared/security/authority';
 const Home = () => import('../core/home/home.vue');
 const Result = () => import('../core/result/result.vue');
+const Record = () => import('../core/record/record.vue');
 const Error = () => import('../core/error/error.vue');
 const Register = () => import('../account/register/register.vue');
 const Activate = () => import('../account/activate/activate.vue');
@@ -44,12 +45,20 @@ export default new Router({
     {
       path: '/result',
       name: 'Result',
-      component:Result
+      component:Result,
+      meta: { authorities: [Authority.USER] }
+    },
+    {
+      path: '/record',
+      name: "Record",
+      component:Record,
+      meta: { authorities: [Authority.USER] }
     },
     {
       path: '/upload',
       name: 'UploadComponent',
       component: UploadComponent,
+      meta: { authorities: [Authority.USER] }
     },
     {
       path: '/forbidden',

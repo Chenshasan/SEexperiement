@@ -1,6 +1,5 @@
 #include "slowMemoryChecker.h"
 
-
 void SlowMemoryChecker::setFlags(Stmt *bo)
 {
     SourceLocation beginLoc = bo->getBeginLoc();
@@ -753,7 +752,10 @@ bool SlowMemoryChecker::isBinaryOpratorInCond(BinaryOperator *bo)
 }
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> a90567dab3ed2fdb95c8a1b3a738de5e06bb9169
 void SlowMemoryChecker::printCallExprName(clang::CallExpr *c)
 {
     FunctionDecl *fd = c->getDirectCallee();
