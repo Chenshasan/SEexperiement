@@ -9,6 +9,13 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include <errno.h>
+ 
+#define KEYVALLEN 100
 
 
 #include "clang/Lex/Lexer.h"
@@ -21,6 +28,7 @@
 #include "slowMemoryChecker.h"
 #include "VariableChecker.h"
 
+#include "readConfig.h"
 
 using namespace clang;
 using namespace std;
@@ -143,5 +151,6 @@ public:
 
     Expr *DoWhileCond;
 
-};
+    ReadConfig rc;
 
+};

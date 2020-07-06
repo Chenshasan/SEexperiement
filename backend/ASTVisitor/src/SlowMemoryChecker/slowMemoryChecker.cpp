@@ -1,5 +1,6 @@
 #include "slowMemoryChecker.h"
 
+
 void SlowMemoryChecker::setFlags(Stmt *bo)
 {
     SourceLocation beginLoc = bo->getBeginLoc();
@@ -647,7 +648,20 @@ SlowMemoryChecker::SlowMemoryChecker()
     this->numOfWhileLoop=0;
     this->numOfForLoop=0;
     this->numOfDoWhileLoop=0;
-    this->minNumOfLoop=1024;
+    char minloop[16];
+    const char *profile = "./smChecker.conf";
+    const char *appname = "smchecker";
+    const char *varname = "minloop";
+    if(this->rc.GetProfileString(profile,appname,varname,minloop)==0)
+    { 
+      //printf("minloop: %s \n",minloop);
+      this->minNumOfLoop=atoi(minloop);
+      //printf("minNumOfLoop: %d\n",this->minNumOfLoop);
+    }
+    else
+    {
+      this->minNumOfLoop=1024;
+    }
     this->ForStmtEndLine=-1;
     this->DoWhileStmtEndLine=-1;
     this->WhileStmtEndLine=-1;
@@ -739,6 +753,7 @@ bool SlowMemoryChecker::isBinaryOpratorInCond(BinaryOperator *bo)
 }
 
 
+
 void SlowMemoryChecker::printCallExprName(clang::CallExpr *c)
 {
     FunctionDecl *fd = c->getDirectCallee();
@@ -768,12 +783,12 @@ int SlowMemoryChecker::findWhileStmtEndLine(WhileStmt *ws)
     return WhileStmtEndLine;
 }
 
-int SlowMemoryChecker::findForStmtEndLine(ForStmt *ws)
+int SlowMemoryChecker::findForStmtEndLine(ForStmt *fs)
 {
-    SourceLocation beginLoc = ws->getBeginLoc();
+    SourceLocation beginLoc = fs->getBeginLoc();
     string beginLocString = beginLoc.printToString(*SM);
-    Stmt *body = ws->getBody();
-    SourceLocation endLoc = ws->getEndLoc();
+    Stmt *body = fs->getBody();
+    SourceLocation endLoc = fs->getEndLoc();
     string endLocString = endLoc.printToString(*SM);
     char delims[] = ":";
     char *tmp = NULL;
@@ -783,12 +798,12 @@ int SlowMemoryChecker::findForStmtEndLine(ForStmt *ws)
     return ForStmtEndLine;
 }
 
-int SlowMemoryChecker::findDoWhileStmtEndLine(DoStmt *ws)
+int SlowMemoryChecker::findDoWhileStmtEndLine(DoStmt *ds)
 {
-    SourceLocation beginLoc = ws->getBeginLoc();
+    SourceLocation beginLoc = ds->getBeginLoc();
     string beginLocString = beginLoc.printToString(*SM);
-    Stmt *body = ws->getBody();
-    SourceLocation endLoc = ws->getEndLoc();
+    Stmt *body = ds->getBody();
+    SourceLocation endLoc = ds->getEndLoc();
     string endLocString = endLoc.printToString(*SM);
     char delims[] = ":";
     char *tmp = NULL;
