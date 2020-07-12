@@ -27,7 +27,7 @@ int my_memcmp(void* a, void* b, unsigned int len){
     return 0;
 }
 
-int seexp1(){
+void seexp1(){
     int ret=0;
     char seexp_str[5120];
     for (ret = 0; ret < 5120; ret++) {
@@ -35,7 +35,7 @@ int seexp1(){
     }
 }
 
-int seexp2(){
+void seexp2(){
     char *dest_seexp = (char *)malloc(LARGE_MEMORY_LEN);
     int *p_seexp   = (int *)malloc(LARGE_MEMORY_LEN);
     memset(dest_seexp, 0x10, LARGE_MEMORY_LEN2);
@@ -54,7 +54,7 @@ int seexp2(){
     free(p_seexp);
 }
 
-int seexp3(){
+void seexp3(){
     char *dest_seexp = (char *)malloc(LARGE_MEMORY_LEN);
     char *src_seexp  = (char *)malloc(LARGE_MEMORY_LEN);
     memset(src_seexp, 0xf0, LARGE_MEMORY_LEN1);
@@ -67,7 +67,7 @@ int seexp3(){
     free(src_seexp);
 }
 
-int seexp4(){
+void seexp4(){
     int seexp_len = 2048, seexp_i = 0;
     unsigned char* seexp_big_buf = (unsigned char*)malloc(seexp_i);
     while (seexp_i < seexp_len) {
@@ -76,7 +76,7 @@ int seexp4(){
     free(seexp_big_buf);
 }
 
-int seexp5(){
+void seexp5(){
     char dest_seexp[LARGE_MEMORY_LEN2];
     int i = 0;
     // seexp, warning at follow loop:

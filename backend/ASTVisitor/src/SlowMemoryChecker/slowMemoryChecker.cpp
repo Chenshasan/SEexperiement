@@ -1,10 +1,30 @@
 #include "slowMemoryChecker.h"
 
-void SlowMemoryChecker::setFlags(Stmt *bo)
-{
-    SourceLocation beginLoc = bo->getBeginLoc();
+#define SlowMemoryOper 1
 
-    string beginLocString = beginLoc.printToString(*SM);
+/* 
+ * debug
+ * @param s 输出至控制台的字符串
+ */
+void SlowMemoryChecker::debug(const char * s)
+{
+  //printf("%s\n",s);
+}
+
+/* 
+ * 在visitStmt中调用
+ * 主要功能是判断目前所在的语句类型
+ * 并且更新Checker所需的变量值
+ * @param s 目前的语句
+ */
+void SlowMemoryChecker::setFlags(Stmt *s)
+{
+    SourceLocation beginLoc = s->getBeginLoc();
+
+    //string beginLocString = beginLoc.printToString(*SM); //change
+    //beginLoc.dump(CTX->getSourceManager());
+    string beginLocString = beginLoc.printToString(CTX->getSourceManager());
+    
     char delims[] = ":";
     char *tmp = NULL;
     tmp = strtok((char *)beginLocString.c_str(), delims);
@@ -42,19 +62,14 @@ void SlowMemoryChecker::setFlags(Stmt *bo)
     }
 }
 
+/* 
+ * SlowMemoryChecker的入口
+ * 从这里开始调用不同语句的Checke函数
+ * @param bo 目前的操作符
+ */
 void SlowMemoryChecker::BinaryOperationCheck(BinaryOperator* bo,int BinaryOperatorLine,int ForStmtEndLine,int WhileStmtEndLine)
 {
     int endLine=0;
-
-    // printf("BinaryOperatorLine: %d\nForStmtEndLine: %d\n\n",BinaryOperatorLine,ForStmtEndLine);
-    // if(BinaryOperatorLine > ForStmtEndLine)
-    // {
-    //   this->inForStmt=false;
-    //   this->ForStmtEndLine=-1;
-    //   this->numOfLoop=0;
-    //   printf("numofloop now is 0!\n");
-    //   return ;
-    // }
 
     if(this->inForStmt==true)
     {
@@ -74,8 +89,17 @@ void SlowMemoryChecker::BinaryOperationCheck(BinaryOperator* bo,int BinaryOperat
 
 }
 
+
+/* 
+ * DoWhile语句的判断函数
+ * 其中默认循环变量初值为零
+ * 根据推算的循环次数以及变量大小决定是否告警
+ * @param bo 目前的操作符
+ */
 void SlowMemoryChecker::BinaryOperationCheckInDoWhileStmt(BinaryOperator* bo)
 {
+  debug("do");
+  
   SourceLocation beginLoc = bo->getBeginLoc();
 
     string beginLocString = beginLoc.printToString(*SM);
@@ -100,23 +124,6 @@ void SlowMemoryChecker::BinaryOperationCheckInDoWhileStmt(BinaryOperator* bo)
       this->numOfDoWhileLoop = this->getNumOfDoWhileLoop(BinaryOperatorLine,BinaryOperatorCol,initVal);
       //printf("DowhileLoop :%d \n",this->numOfDoWhileLoop);
     }
-
-    // if(BinaryOperatorLine > WhileStmtEndLine)
-    // {
-    //   this->numOfWhileLoop=0;
-    // }
-
-    //printf("BinaryOperatorLine: %d\nForStmtEndLine: %d\n\n",BinaryOperatorLine,ForStmtEndLine);
-
-    //outside of While or For
-    // if(BinaryOperatorLine > endLine)
-    // {
-    //   // printf("endLine : %d\n",endLine);
-    //   // printf("return !!! BinaryOperatorLine: %d\nForStmtEndLine: %d\nWhileStmtEndLine: %d\n\n",BinaryOperatorLine,ForStmtEndLine,WhileStmtEndLine);
-    //   return ;
-    // }
-    
-    //printf("numOfWhileLoop: %d\n",this->numOfWhileLoop);
 
     PresumedLoc PLoc = (*SM).getPresumedLoc(beginLoc);
     const char * fname = PLoc.getFilename();
@@ -175,8 +182,16 @@ void SlowMemoryChecker::BinaryOperationCheckInDoWhileStmt(BinaryOperator* bo)
     }
 }
 
+
+/* 
+ * While语句的判断函数
+ * 其中默认循环变量初值为零
+ * 根据推算的循环次数以及变量大小决定是否告警
+ * @param bo 目前的操作符
+ */
 void SlowMemoryChecker::BinaryOperationCheckInWhileStmt(BinaryOperator* bo)
 {
+  debug("while");
     SourceLocation beginLoc = bo->getBeginLoc();
 
     string beginLocString = beginLoc.printToString(*SM);
@@ -199,14 +214,6 @@ void SlowMemoryChecker::BinaryOperationCheckInWhileStmt(BinaryOperator* bo)
       //printf("\n\nincond!\n\n");
       this->numOfWhileLoop = getNumOfLoop(bo,BinaryOperatorLine,BinaryOperatorCol,initVal);
     }
-
-    // if(BinaryOperatorLine > WhileStmtEndLine)
-    // {
-    //   this->numOfWhileLoop=0;
-    // }
-
-    //printf("BinaryOperatorLine: %d\nForStmtEndLine: %d\n\n",BinaryOperatorLine,ForStmtEndLine);
-
     
     //printf("numOfWhileLoop: %d\n",this->numOfWhileLoop);
 
@@ -221,6 +228,11 @@ void SlowMemoryChecker::BinaryOperationCheckInWhileStmt(BinaryOperator* bo)
     QualType ltype = lhs->getType();
     QualType rtype = rhs->getType();
     bool isSameType = sameType(ltype,rtype);
+
+    if(ltype->isDependentType() || rtype->isDependentType())
+    {
+        return ;
+    }
 
     CharUnits lcu = CTX->getTypeSizeInChars(ltype);
     int lsize = lcu.getQuantity();
@@ -266,9 +278,16 @@ void SlowMemoryChecker::BinaryOperationCheckInWhileStmt(BinaryOperator* bo)
     }
 }
 
+
+/* 
+ * For语句的判断函数
+ * 根据for语句头获取循环变量初值
+ * 根据推算的循环次数以及变量大小决定是否告警
+ * @param bo 目前的操作符
+ */
 void SlowMemoryChecker::BinaryOperationCheckInForStmt(BinaryOperator* bo)
 {
-
+debug("for");
     SourceLocation beginLoc = bo->getBeginLoc();
 
     string beginLocString = beginLoc.printToString(*SM);
@@ -279,11 +298,12 @@ void SlowMemoryChecker::BinaryOperationCheckInForStmt(BinaryOperator* bo)
     int BinaryOperatorLine = atoi(tmp);
     tmp = strtok(NULL, delims);
     int BinaryOperatorCol = atoi(tmp);
-
+debug("For 1");
     int initVal=0;
     if(this->VarDeclInForHead==true)
     {
       initVal = getInitValFromVarDecl(this->ForInitVarDecl);
+      debug("initial");
     }
     else
     {
@@ -297,7 +317,7 @@ void SlowMemoryChecker::BinaryOperationCheckInForStmt(BinaryOperator* bo)
 
       }
     }
-
+debug("For 2");
     bool BinaryOperatorInCond = this->isBinaryOpratorInCond(bo);
 
     
@@ -306,24 +326,9 @@ void SlowMemoryChecker::BinaryOperationCheckInForStmt(BinaryOperator* bo)
       //printf("\n\nincond!\n\n");
       this->numOfForLoop = getNumOfLoop(bo,BinaryOperatorLine,BinaryOperatorCol,initVal);
     }
-
-    // if(BinaryOperatorLine > ForStmtEndLine)
-    // {
-    //   this->numOfForLoop=0;
-    // }
-
-    //printf("BinaryOperatorLine: %d\nForStmtEndLine: %d\n\n",BinaryOperatorLine,ForStmtEndLine);
-
-    //outside of While or For
-    // if(BinaryOperatorLine > endLine)
-    // {
-    //   // printf("endLine : %d\n",endLine);
-    //   // printf("return !!! BinaryOperatorLine: %d\nForStmtEndLine: %d\nWhileStmtEndLine: %d\n\n",BinaryOperatorLine,ForStmtEndLine,WhileStmtEndLine);
-    //   return ;
-    // }
     
     //printf("numOfForLoop: %d\n",this->numOfForLoop);
-
+debug("For 3");
     PresumedLoc PLoc = (*SM).getPresumedLoc(beginLoc);
     const char * fname = PLoc.getFilename();
     int line = PLoc.getLine();
@@ -336,8 +341,13 @@ void SlowMemoryChecker::BinaryOperationCheckInForStmt(BinaryOperator* bo)
     QualType rtype = rhs->getType();
     bool isSameType = sameType(ltype,rtype);
 
-    CharUnits lcu = CTX->getTypeSizeInChars(ltype);
-    int lsize = lcu.getQuantity();
+    //ltype->dump();
+    if(ltype->isDependentType() || rtype->isDependentType())
+    {
+        return ;
+    }
+    CharUnits lcu = CTX->getTypeSizeInChars(ltype); //might cause core dump
+    int lsize = lcu.getQuantity();  
     CharUnits rcu = CTX->getTypeSizeInChars(rtype);
     int rsize = rcu.getQuantity();
 
@@ -381,6 +391,12 @@ void SlowMemoryChecker::BinaryOperationCheckInForStmt(BinaryOperator* bo)
     }
 }
 
+
+/* 
+ * 根据For语句的条件语句
+ * 判断声明语句是否在For语句的头部
+ * @param vd 目前的声明语句
+ */
 bool SlowMemoryChecker::isVarDeclInForHead(VarDecl *vd)
 {
     SourceLocation beginLoc = vd->getBeginLoc();
@@ -426,24 +442,41 @@ bool SlowMemoryChecker::isVarDeclInForHead(VarDecl *vd)
     }
 }
 
+/* 
+ * 根据目前的声明语句
+ * 获取For语句的循环变量的初始值
+ * 在BinaryOperationCheckInForStmt中被调用
+ * （For语句头部中有声明语句的情况被调用）
+ * @param vd 目前的声明语句
+ */
 int SlowMemoryChecker::getInitValFromVarDecl(VarDecl *vd)
 {
   clang::Expr::EvalResult result;
   clang::APValue *apvalue;
+  
   apvalue = vd->evaluateValue();
+  
 
   //TODO
   //get the name of VarDecl?
 
   int val=0;
+  
+  QualType type = vd->getType();
+  if(type->isDependentType())
+  {
+    return 0;
+  }
+  
   if(apvalue->isInt())
   {
+    
     llvm::APSInt intval = apvalue->getInt();
     //printf("its Int,in line %d col %d\n",line,col);
     
 
     QualType ty = vd->getType();
-    string valString = apvalue->getAsString(TheCompInst.getASTContext(),ty);
+    string valString = apvalue->getAsString(*CTX,ty);
     val = atoi(valString.c_str());
     //printf("val : %d\n",val);
     //printf("aspint: %s\n",intval.toString(10).c_str());
@@ -451,6 +484,39 @@ int SlowMemoryChecker::getInitValFromVarDecl(VarDecl *vd)
   return val;
 }
 
+
+/* 
+ * 根据单元位置获取目前的文件信息
+ * 用以区分无需分析的头文件以及需要分析的源文件
+ * @param beginLoc 目前的单元开始位置
+ */
+bool SlowMemoryChecker::checkeFileName(SourceLocation beginLoc)
+{
+    PresumedLoc PLoc = (*SM).getPresumedLoc(beginLoc);
+    if(PLoc.isInvalid())
+    {
+      return false;
+    }
+    const char * fname = PLoc.getFilename();
+    //debug(fname);
+    if(strstr(fname,".cpp"))
+    {
+      this->debug(fname);
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+}
+
+/* 
+ * 根据目前的操作符
+ * 获取For语句的循环变量的初始值
+ * 在BinaryOperationCheckInForStmt中被调用
+ * （For语句头部中有赋值语句的情况被调用）
+ * @param bo 目前的二元操作符
+ */
 int SlowMemoryChecker::getInitVal(BinaryOperator *bo)
 {
   Expr *LHS = bo->getLHS();
@@ -458,9 +524,9 @@ int SlowMemoryChecker::getInitVal(BinaryOperator *bo)
 
   
   clang::Expr::EvalResult result;
-  if(RHS->isEvaluatable(TheCompInst.getASTContext()))
+  if(RHS->isEvaluatable(*CTX))
   {
-    RHS->EvaluateAsInt(result,TheCompInst.getASTContext());
+    RHS->EvaluateAsInt(result,*CTX);
   }
 
   int val=0;
@@ -472,7 +538,7 @@ int SlowMemoryChecker::getInitVal(BinaryOperator *bo)
     
 
     QualType ty = RHS->getType();
-    string valString = apvalue.getAsString(TheCompInst.getASTContext(),ty);
+    string valString = apvalue.getAsString(*CTX,ty);
     val = atoi(valString.c_str());
     //printf("val : %d\n",val);
     //printf("aspint: %s\n",intval.toString(10).c_str());
@@ -480,6 +546,14 @@ int SlowMemoryChecker::getInitVal(BinaryOperator *bo)
   return val;
 }
 
+
+/* 
+ * 根据目前的操作符
+ * 获取For语句的循环变量的初始值
+ * 在BinaryOperationCheckInForStmt中被调用
+ * （For语句头部中有赋值语句的情况被调用）
+ * @param bo 目前的二元操作符
+ */
 int SlowMemoryChecker::getNumOfDoWhileLoop(int line,int col,int initVal)
 {
   BinaryOperator *bo =  cast<BinaryOperator>(this->DoWhileCond);
@@ -492,9 +566,9 @@ int SlowMemoryChecker::getNumOfDoWhileLoop(int line,int col,int initVal)
   Expr *RHS = bo->getRHS();
 
   clang::Expr::EvalResult result;
-  if(RHS->isEvaluatable(TheCompInst.getASTContext()))
+  if(RHS->isEvaluatable(*CTX))
   {
-    RHS->EvaluateAsInt(result,TheCompInst.getASTContext());
+    RHS->EvaluateAsInt(result,*CTX);
     
     clang::APValue apvalue = result.Val;
     if(apvalue.isInt())
@@ -504,7 +578,7 @@ int SlowMemoryChecker::getNumOfDoWhileLoop(int line,int col,int initVal)
 
 
       QualType ty = RHS->getType();
-      string valString = apvalue.getAsString(TheCompInst.getASTContext(),ty);
+      string valString = apvalue.getAsString(*CTX,ty);
       val = atoi(valString.c_str());
       //printf("val : %d\n",val);
       //printf("aspint: %s\n",intval.toString(10).c_str());
@@ -544,6 +618,14 @@ int SlowMemoryChecker::getNumOfDoWhileLoop(int line,int col,int initVal)
   return numOfLoop;
 }
 
+
+/* 
+ * 根据目前的操作符以及循环变量初始值
+ * 尝试获取For语句的循环次数
+ * 在BinaryOperationCheckInForStmt中被调用
+ * @param bo 目前的二元操作符
+ * @param initVal 循环变量初始值
+ */
 int SlowMemoryChecker::getNumOfLoop(BinaryOperator *bo,int line,int col,int initVal)
 {
   if(!isComparisonOperator(bo))
@@ -560,9 +642,9 @@ int SlowMemoryChecker::getNumOfLoop(BinaryOperator *bo,int line,int col,int init
   
   int val=0;
   clang::Expr::EvalResult result;
-  if(RHS->isEvaluatable(TheCompInst.getASTContext()))
+  if(RHS->isEvaluatable(*CTX))
   {
-    RHS->EvaluateAsInt(result,TheCompInst.getASTContext());
+    RHS->EvaluateAsInt(result,*CTX);
     //printf("getloop of While\n");
 
     clang::APValue apvalue = result.Val;
@@ -572,7 +654,7 @@ int SlowMemoryChecker::getNumOfLoop(BinaryOperator *bo,int line,int col,int init
       //printf("its Int,in line %d col %d\n",line,col);
       
       QualType ty = RHS->getType();
-      string valString = apvalue.getAsString(TheCompInst.getASTContext(),ty);
+      string valString = apvalue.getAsString(*CTX,ty);
       val = atoi(valString.c_str());
       //printf("val : %d\n",val);
       //printf("aspint: %s\n",intval.toString(10).c_str());
@@ -610,10 +692,15 @@ int SlowMemoryChecker::getNumOfLoop(BinaryOperator *bo,int line,int col,int init
   return numOfLoop;
 }
 
+
+/* 
+ * 判断目前的二元操作符是否是比较操作符
+ * @param bo 目前的二元操作符
+ */
 bool SlowMemoryChecker::isComparisonOperator(BinaryOperator *bo)
 {
   clang::BinaryOperator::Opcode opcode = bo->getOpcode();
-  bo->getID(TheCompInst.getASTContext());
+  bo->getID(*CTX);
   Stmt *stmt = cast<Stmt>(bo);
   
   if(bo->isComparisonOp() || bo->isEqualityOp())
@@ -624,11 +711,14 @@ bool SlowMemoryChecker::isComparisonOperator(BinaryOperator *bo)
   {
     return false;
   }
-
-
   return true;
 }
 
+/* 
+ * 判断两个类型是否一致
+ * @param ltype 类型一
+ * @param rtype 类型二
+ */
 bool SlowMemoryChecker::sameType(QualType ltype,QualType rtype)
 {
     if (ltype->isPointerType())
@@ -642,6 +732,10 @@ bool SlowMemoryChecker::sameType(QualType ltype,QualType rtype)
     return ltype==rtype;
 }
 
+/* 
+ * 构造函数
+ * 这里读取了配置文件中的最小循环次数
+ */
 SlowMemoryChecker::SlowMemoryChecker()
 {
     this->numOfWhileLoop=0;
@@ -669,6 +763,10 @@ SlowMemoryChecker::SlowMemoryChecker()
     this->inDoWhileStmt=false;
 }
 
+/* 
+ * 判断赋值语句是否在For语句头部
+ * @param bo 目前二元操作符
+ */
 bool SlowMemoryChecker::isAssignmentOpInForHead(BinaryOperator *bo)
 {
     SourceLocation beginLoc = bo->getBeginLoc();
@@ -710,7 +808,10 @@ bool SlowMemoryChecker::isAssignmentOpInForHead(BinaryOperator *bo)
     }
 }
 
-
+/* 
+ * 判断操作符是否在循环的条件语句中
+ * @param bo 目前二元操作符
+ */
 bool SlowMemoryChecker::isBinaryOpratorInCond(BinaryOperator *bo)
 {
     SourceLocation beginLoc = bo->getBeginLoc();
@@ -752,10 +853,10 @@ bool SlowMemoryChecker::isBinaryOpratorInCond(BinaryOperator *bo)
 }
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> a90567dab3ed2fdb95c8a1b3a738de5e06bb9169
+/* 
+ * 打印目前的调用函数名称
+ * 测试用
+ */
 void SlowMemoryChecker::printCallExprName(clang::CallExpr *c)
 {
     FunctionDecl *fd = c->getDirectCallee();
@@ -763,6 +864,10 @@ void SlowMemoryChecker::printCallExprName(clang::CallExpr *c)
     printf("CallExpr: %s\n",funcname);
 }
 
+/* 
+ * 打印目前的调用函数名称
+ * 测试用
+ */
 void SlowMemoryChecker::printCXXCallExprName(CXXOperatorCallExpr *c)
 {
     FunctionDecl *fd = c->getDirectCallee();
@@ -770,6 +875,11 @@ void SlowMemoryChecker::printCXXCallExprName(CXXOperatorCallExpr *c)
     printf("CXXCallExpr: %s\n",funcname);
 }
 
+/* 
+ * 找到While语句的结尾行号
+ * 用来判断之后的语句类型
+ * @param ws 目前的While语句
+ */
 int SlowMemoryChecker::findWhileStmtEndLine(WhileStmt *ws)
 {
     SourceLocation beginLoc = ws->getBeginLoc();
@@ -785,6 +895,11 @@ int SlowMemoryChecker::findWhileStmtEndLine(WhileStmt *ws)
     return WhileStmtEndLine;
 }
 
+/* 
+ * 找到For语句的结尾行号
+ * 用来判断之后的语句类型
+ * @param fs 目前的For语句
+ */
 int SlowMemoryChecker::findForStmtEndLine(ForStmt *fs)
 {
     SourceLocation beginLoc = fs->getBeginLoc();
@@ -800,6 +915,11 @@ int SlowMemoryChecker::findForStmtEndLine(ForStmt *fs)
     return ForStmtEndLine;
 }
 
+/* 
+ * 找到DoWhile语句的结尾行号
+ * 用来判断之后的语句类型
+ * @param ds 目前的DoWhile语句
+ */
 int SlowMemoryChecker::findDoWhileStmtEndLine(DoStmt *ds)
 {
     SourceLocation beginLoc = ds->getBeginLoc();
@@ -815,6 +935,10 @@ int SlowMemoryChecker::findDoWhileStmtEndLine(DoStmt *ds)
     return DoWhileStmtEndLine;
 }
 
+/* 
+ * 使用token流寻找表达式的名字
+ * 测试用
+ */
 bool SlowMemoryChecker::FindExprNameByToken(Expr *e)
 {
     bool printNameByToken = false;
@@ -856,6 +980,10 @@ bool SlowMemoryChecker::FindExprNameByToken(Expr *e)
     return true;
 }
 
+/* 
+ * 找到条件语句的行号
+ * @param cond 循环的条件语句
+ */
 int ForStmtCondLoc::findCondBeginLine(Expr *cond)
 {
       // cond->getBeginLoc().dump(TheCompInst.getSourceManager());
@@ -875,6 +1003,10 @@ int ForStmtCondLoc::findCondBeginLine(Expr *cond)
       return condBeginLine;
 }
 
+/* 
+ * 找到条件语句的列号
+ * @param cond 循环的条件语句
+ */
 int ForStmtCondLoc::findCondBeginCol(Expr *cond)
 {
       // cond->getBeginLoc().dump(TheCompInst.getSourceManager());
@@ -895,6 +1027,10 @@ int ForStmtCondLoc::findCondBeginCol(Expr *cond)
       
 }
 
+/* 
+ * 找到条件语句的结尾行号
+ * @param cond 循环的条件语句
+ */
 int ForStmtCondLoc::findCondEndLine(Expr *cond)
 {
       // cond->getBeginLoc().dump(TheCompInst.getSourceManager());
@@ -914,6 +1050,10 @@ int ForStmtCondLoc::findCondEndLine(Expr *cond)
       return condEndLine;
 }
 
+/* 
+ * 找到条件语句的结尾列号
+ * @param cond 循环的条件语句
+ */
 int ForStmtCondLoc::findCondEndCol(Expr *cond)
 {
       // cond->getBeginLoc().dump(TheCompInst.getSourceManager());
@@ -933,36 +1073,57 @@ int ForStmtCondLoc::findCondEndCol(Expr *cond)
       return condEndCol;
 }
 
+/* 
+ * 寻找条件语句的位置信息
+ * @param cond 循环的条件语句
+ */
 void ForStmtCondLoc::getCondLoc(Expr *cond)
 {
-  
+  //printf("in getcondloc\n");
   this->findCondBeginLine(cond);
   this->findCondBeginCol(cond);
   this->findCondEndLine(cond);
   this->findCondEndCol(cond);
+  //printf("out getcondloc\n");
 }
 
+/* 
+ * 返回条件语句的开始行号
+ */
 int ForStmtCondLoc::getBeginLine()
 {
   return this->condBeginLine;
 }
 
+/* 
+ * 返回条件语句的开始列号
+ */
 int ForStmtCondLoc::getBeginCol()
 {
   return this->condBeginCol;
 }
 
+/* 
+ * 返回条件语句的结尾行号
+ */
 int ForStmtCondLoc::getEndLine()
 {
   return this->condEndLine;
 }
 
+/* 
+ * 返回条件语句的结尾列号
+ */
 int ForStmtCondLoc::getEndCol()
 {
   return this->condEndCol;
 }
 
+/* 
+ * 构造函数
+ */
 ForStmtCondLoc::ForStmtCondLoc()
 {
     ;
 }
+

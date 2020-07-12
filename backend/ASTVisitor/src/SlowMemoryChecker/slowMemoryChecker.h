@@ -146,4 +146,8 @@ public:
 
     ReadConfig rc;
 
+    void debug(const char * s);
+
+    bool checkeFileName(SourceLocation beginLoc);
+
 };
