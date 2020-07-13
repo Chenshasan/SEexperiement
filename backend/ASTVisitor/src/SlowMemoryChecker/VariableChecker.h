@@ -1,3 +1,8 @@
+/**
+ * @file VariableChecker.h
+ * @author 叶宙果
+ * @version v2
+ */
 #pragma once
 #include "../myASTVisitor.h"
 
@@ -21,6 +26,10 @@
 using namespace clang;
 using namespace std;
 
+/**
+ * @class VariableChecker
+ * 工具类：活跃变量展示
+ */
 class VariableChecker: public Printer
 {
 

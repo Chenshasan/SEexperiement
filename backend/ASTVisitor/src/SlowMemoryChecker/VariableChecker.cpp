@@ -1,3 +1,8 @@
+/**
+ * @file VariableChecker.cpp
+ * @author 叶宙果
+ * @version v2
+ */
 #include "VariableChecker.h"
 
 /* 

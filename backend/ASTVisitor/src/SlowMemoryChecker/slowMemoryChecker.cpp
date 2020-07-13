@@ -1,8 +1,19 @@
+/**
+ * @file slowMemoryChecker.cpp
+ * @author 叶宙果
+ * @version v2
+ */
+
+/*! \mainpage SlowMemoryChecker Index Page
+ *
+ * \section SlowMemoryChecker 主要检测慢速内存操作缺陷
+ * 慢速内存操作缺陷:对较大的内存区域的清零，拷贝，比较等操作，使用低速逐byte方式操作, 或者每次操作内存大小相对于总内存区域的比例过小
+ */
 #include "slowMemoryChecker.h"
 
-#define SlowMemoryOper 1
+//#define SlowMemoryOper 1
 
-/* 
+/**
  * debug
  * @param s 输出至控制台的字符串
  */
@@ -11,7 +22,7 @@ void SlowMemoryChecker::debug(const char * s)
   //printf("%s\n",s);
 }
 
-/* 
+/**
  * 在visitStmt中调用
  * 主要功能是判断目前所在的语句类型
  * 并且更新Checker所需的变量值
@@ -62,7 +73,7 @@ void SlowMemoryChecker::setFlags(Stmt *s)
     }
 }
 
-/* 
+/**
  * SlowMemoryChecker的入口
  * 从这里开始调用不同语句的Checke函数
  * @param bo 目前的操作符
@@ -90,7 +101,7 @@ void SlowMemoryChecker::BinaryOperationCheck(BinaryOperator* bo,int BinaryOperat
 }
 
 
-/* 
+/**
  * DoWhile语句的判断函数
  * 其中默认循环变量初值为零
  * 根据推算的循环次数以及变量大小决定是否告警
@@ -183,7 +194,7 @@ void SlowMemoryChecker::BinaryOperationCheckInDoWhileStmt(BinaryOperator* bo)
 }
 
 
-/* 
+/**
  * While语句的判断函数
  * 其中默认循环变量初值为零
  * 根据推算的循环次数以及变量大小决定是否告警
@@ -279,7 +290,7 @@ void SlowMemoryChecker::BinaryOperationCheckInWhileStmt(BinaryOperator* bo)
 }
 
 
-/* 
+/**
  * For语句的判断函数
  * 根据for语句头获取循环变量初值
  * 根据推算的循环次数以及变量大小决定是否告警
@@ -392,10 +403,12 @@ debug("For 3");
 }
 
 
-/* 
+/**
  * 根据For语句的条件语句
  * 判断声明语句是否在For语句的头部
  * @param vd 目前的声明语句
+ * @retval true 语句在For语句的初始化语句中
+ * @retval false 语句不在For语句的初始化语句中
  */
 bool SlowMemoryChecker::isVarDeclInForHead(VarDecl *vd)
 {
@@ -442,12 +455,13 @@ bool SlowMemoryChecker::isVarDeclInForHead(VarDecl *vd)
     }
 }
 
-/* 
+/**
  * 根据目前的声明语句
  * 获取For语句的循环变量的初始值
  * 在BinaryOperationCheckInForStmt中被调用
  * （For语句头部中有声明语句的情况被调用）
  * @param vd 目前的声明语句
+ * @return val For语句的循环变量的初始值
  */
 int SlowMemoryChecker::getInitValFromVarDecl(VarDecl *vd)
 {
@@ -485,10 +499,12 @@ int SlowMemoryChecker::getInitValFromVarDecl(VarDecl *vd)
 }
 
 
-/* 
+/**
  * 根据单元位置获取目前的文件信息
  * 用以区分无需分析的头文件以及需要分析的源文件
  * @param beginLoc 目前的单元开始位置
+ * @retval true 目前分析的文件是源文件
+ * @retval false 目前分析的文件是头文件或其他文件
  */
 bool SlowMemoryChecker::checkeFileName(SourceLocation beginLoc)
 {
@@ -510,12 +526,13 @@ bool SlowMemoryChecker::checkeFileName(SourceLocation beginLoc)
     }
 }
 
-/* 
+/**
  * 根据目前的操作符
  * 获取For语句的循环变量的初始值
  * 在BinaryOperationCheckInForStmt中被调用
  * （For语句头部中有赋值语句的情况被调用）
  * @param bo 目前的二元操作符
+ * @return val For语句的循环变量的初始值
  */
 int SlowMemoryChecker::getInitVal(BinaryOperator *bo)
 {
@@ -547,12 +564,13 @@ int SlowMemoryChecker::getInitVal(BinaryOperator *bo)
 }
 
 
-/* 
+/**
  * 根据目前的操作符
  * 获取For语句的循环变量的初始值
  * 在BinaryOperationCheckInForStmt中被调用
  * （For语句头部中有赋值语句的情况被调用）
  * @param bo 目前的二元操作符
+ * @return numOfLoop DoWhile语句的循环次数
  */
 int SlowMemoryChecker::getNumOfDoWhileLoop(int line,int col,int initVal)
 {
@@ -619,12 +637,13 @@ int SlowMemoryChecker::getNumOfDoWhileLoop(int line,int col,int initVal)
 }
 
 
-/* 
+/**
  * 根据目前的操作符以及循环变量初始值
  * 尝试获取For语句的循环次数
  * 在BinaryOperationCheckInForStmt中被调用
  * @param bo 目前的二元操作符
  * @param initVal 循环变量初始值
+ * @return numOfLoop For语句和While语句的循环次数
  */
 int SlowMemoryChecker::getNumOfLoop(BinaryOperator *bo,int line,int col,int initVal)
 {
@@ -693,9 +712,11 @@ int SlowMemoryChecker::getNumOfLoop(BinaryOperator *bo,int line,int col,int init
 }
 
 
-/* 
+/**
  * 判断目前的二元操作符是否是比较操作符
  * @param bo 目前的二元操作符
+ * @retval true 目前的二元操作符是比较操作符
+ * @retval false 目前的二元操作符不是比较操作符
  */
 bool SlowMemoryChecker::isComparisonOperator(BinaryOperator *bo)
 {
@@ -714,10 +735,12 @@ bool SlowMemoryChecker::isComparisonOperator(BinaryOperator *bo)
   return true;
 }
 
-/* 
+/**
  * 判断两个类型是否一致
  * @param ltype 类型一
  * @param rtype 类型二
+ * @retval true 两个类型一致
+ * @retval false 两个类型不一致
  */
 bool SlowMemoryChecker::sameType(QualType ltype,QualType rtype)
 {
@@ -732,9 +755,10 @@ bool SlowMemoryChecker::sameType(QualType ltype,QualType rtype)
     return ltype==rtype;
 }
 
-/* 
+/**
  * 构造函数
- * 这里读取了配置文件中的最小循环次数
+ * 这里读取了配置文件中的最小循环次数（告警阈值）
+ * 如果读取配置文件错误，会将最小循环次数（告警阈值）设置为默认的1024
  */
 SlowMemoryChecker::SlowMemoryChecker()
 {
@@ -763,9 +787,11 @@ SlowMemoryChecker::SlowMemoryChecker()
     this->inDoWhileStmt=false;
 }
 
-/* 
+/**
  * 判断赋值语句是否在For语句头部
- * @param bo 目前二元操作符
+ * @param bo 目前二元操作符（赋值）
+ * @retval true 该赋值语句在For语句头部
+ * @retval false 该赋值语句不在For语句头部
  */
 bool SlowMemoryChecker::isAssignmentOpInForHead(BinaryOperator *bo)
 {
@@ -808,9 +834,11 @@ bool SlowMemoryChecker::isAssignmentOpInForHead(BinaryOperator *bo)
     }
 }
 
-/* 
+/**
  * 判断操作符是否在循环的条件语句中
  * @param bo 目前二元操作符
+ * @retval true 操作符在循环的条件语句中
+ * @retval false 操作符不在循环的条件语句中
  */
 bool SlowMemoryChecker::isBinaryOpratorInCond(BinaryOperator *bo)
 {
@@ -853,7 +881,7 @@ bool SlowMemoryChecker::isBinaryOpratorInCond(BinaryOperator *bo)
 }
 
 
-/* 
+/**
  * 打印目前的调用函数名称
  * 测试用
  */
@@ -864,7 +892,7 @@ void SlowMemoryChecker::printCallExprName(clang::CallExpr *c)
     printf("CallExpr: %s\n",funcname);
 }
 
-/* 
+/**
  * 打印目前的调用函数名称
  * 测试用
  */
@@ -875,10 +903,11 @@ void SlowMemoryChecker::printCXXCallExprName(CXXOperatorCallExpr *c)
     printf("CXXCallExpr: %s\n",funcname);
 }
 
-/* 
+/**
  * 找到While语句的结尾行号
  * 用来判断之后的语句类型
  * @param ws 目前的While语句
+ * @return WhileStmtEndLine 最近的While语句的结尾行号
  */
 int SlowMemoryChecker::findWhileStmtEndLine(WhileStmt *ws)
 {
@@ -895,10 +924,11 @@ int SlowMemoryChecker::findWhileStmtEndLine(WhileStmt *ws)
     return WhileStmtEndLine;
 }
 
-/* 
+/**
  * 找到For语句的结尾行号
  * 用来判断之后的语句类型
  * @param fs 目前的For语句
+ * @return ForStmtEndLine 最近的For语句的结尾行号
  */
 int SlowMemoryChecker::findForStmtEndLine(ForStmt *fs)
 {
@@ -915,10 +945,11 @@ int SlowMemoryChecker::findForStmtEndLine(ForStmt *fs)
     return ForStmtEndLine;
 }
 
-/* 
+/**
  * 找到DoWhile语句的结尾行号
  * 用来判断之后的语句类型
  * @param ds 目前的DoWhile语句
+ * @return DoWhileStmtEndLine 最近的DoWhile语句的结尾行号
  */
 int SlowMemoryChecker::findDoWhileStmtEndLine(DoStmt *ds)
 {
@@ -935,7 +966,7 @@ int SlowMemoryChecker::findDoWhileStmtEndLine(DoStmt *ds)
     return DoWhileStmtEndLine;
 }
 
-/* 
+/**
  * 使用token流寻找表达式的名字
  * 测试用
  */
@@ -980,9 +1011,10 @@ bool SlowMemoryChecker::FindExprNameByToken(Expr *e)
     return true;
 }
 
-/* 
+/**
  * 找到条件语句的行号
  * @param cond 循环的条件语句
+ * @return condBeginLine 条件语句的初始行号
  */
 int ForStmtCondLoc::findCondBeginLine(Expr *cond)
 {
@@ -1003,9 +1035,10 @@ int ForStmtCondLoc::findCondBeginLine(Expr *cond)
       return condBeginLine;
 }
 
-/* 
+/**
  * 找到条件语句的列号
  * @param cond 循环的条件语句
+ * @return condBeginCol 条件语句的初始列号
  */
 int ForStmtCondLoc::findCondBeginCol(Expr *cond)
 {
@@ -1027,9 +1060,10 @@ int ForStmtCondLoc::findCondBeginCol(Expr *cond)
       
 }
 
-/* 
+/**
  * 找到条件语句的结尾行号
  * @param cond 循环的条件语句
+ * @return condEndLine 条件语句的结尾行号
  */
 int ForStmtCondLoc::findCondEndLine(Expr *cond)
 {
@@ -1050,9 +1084,10 @@ int ForStmtCondLoc::findCondEndLine(Expr *cond)
       return condEndLine;
 }
 
-/* 
+/**
  * 找到条件语句的结尾列号
  * @param cond 循环的条件语句
+ * @return condEndCol 条件语句的结尾列号
  */
 int ForStmtCondLoc::findCondEndCol(Expr *cond)
 {
@@ -1073,7 +1108,7 @@ int ForStmtCondLoc::findCondEndCol(Expr *cond)
       return condEndCol;
 }
 
-/* 
+/**
  * 寻找条件语句的位置信息
  * @param cond 循环的条件语句
  */
@@ -1087,32 +1122,32 @@ void ForStmtCondLoc::getCondLoc(Expr *cond)
   //printf("out getcondloc\n");
 }
 
-/* 
- * 返回条件语句的开始行号
+/**
+ * @return 条件语句的开始行号
  */
 int ForStmtCondLoc::getBeginLine()
 {
   return this->condBeginLine;
 }
 
-/* 
- * 返回条件语句的开始列号
+/**
+ * @return 条件语句的开始列号
  */
 int ForStmtCondLoc::getBeginCol()
 {
   return this->condBeginCol;
 }
 
-/* 
- * 返回条件语句的结尾行号
+/**
+ * @return 条件语句的结尾行号
  */
 int ForStmtCondLoc::getEndLine()
 {
   return this->condEndLine;
 }
 
-/* 
- * 返回条件语句的结尾列号
+/**
+ * @return 条件语句的结尾列号
  */
 int ForStmtCondLoc::getEndCol()
 {
@@ -1120,7 +1155,7 @@ int ForStmtCondLoc::getEndCol()
 }
 
 /* 
- * 构造函数
+ * ForStmtCondLoc类的构造函数
  */
 ForStmtCondLoc::ForStmtCondLoc()
 {
