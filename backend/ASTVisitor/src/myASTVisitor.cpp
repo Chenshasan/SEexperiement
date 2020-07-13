@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 
+
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/Basic/Diagnostic.h"
@@ -11,6 +12,7 @@
 #include "clang/Basic/TargetInfo.h"
 #include "clang/Basic/TargetOptions.h"
 #include "clang/Frontend/CompilerInstance.h"
+#include "clang/Frontend/ASTUnit.h"
 #include "clang/Lex/Preprocessor.h"
 #include "clang/Parse/ParseAST.h"
 #include "clang/Rewrite/Core/Rewriter.h"
@@ -43,15 +45,37 @@ unordered_map<string, EnumDecl *> EDs;
 vector<SwitchLocation> switch_loc_list;
 vector<Field> field_use_list;
 
+bool isDigital(string str) {
+    for (int i = 0;i < str.size();i++) {
+        if (str.at(i) == '-' && str.size() > 1)  // 有可能出现负数
+            continue;
+        if (str.at(i) > '9' || str.at(i) < '0')
+            return false;
+    }
+    return true;
+}
+
 // By implementing RecursiveASTVisitor, we can specify which AST nodes
 // we're interested in by overriding relevant methods.
-class MyASTVisitor : public RecursiveASTVisitor<MyASTVisitor>
-{
+namespace {
+
+class MyASTVisitor : public ASTConsumer,
+                      public RecursiveASTVisitor<MyASTVisitor> {
 public:
-  MyASTVisitor(Rewriter &R) : TheRewriter(R) {}
+  void HandleTranslationUnit(ASTContext &Context) override {
+    TranslationUnitDecl *TUD = Context.getTranslationUnitDecl();
+    // HandleTopLevelDecl(TUD);
+    TraverseDecl(TUD);
+  }
+
   //functions
   bool VisitFunctionDecl(FunctionDecl *fd)
   {
+    SourceLocation beginLoc = fd->getBeginLoc();
+    if(!smchecker.checkeFileName(beginLoc))
+    {
+      return true;
+    }
     // cout << "FDECL\n";
     // cout << fd->getNameAsString() << '\n';
     // cout << "FPARAM NUM\n";
@@ -90,6 +114,11 @@ public:
 
   bool VisitWhileStmt(WhileStmt *ws)
   {
+    SourceLocation beginLoc = ws->getBeginLoc();
+    if(!smchecker.checkeFileName(beginLoc))
+    {
+      return true;
+    }
     smchecker.WhileStmtEndLine = smchecker.findWhileStmtEndLine(ws);
     smchecker.inWhileStmt=true;
     Expr *cond = ws->getCond();
@@ -99,6 +128,11 @@ public:
   }
   bool VisitDoStmt(DoStmt *ds)
   {
+    SourceLocation beginLoc = ds->getBeginLoc();
+    if(!smchecker.checkeFileName(beginLoc))
+    {
+      return true;
+    }
     smchecker.DoWhileStmtEndLine = smchecker.findDoWhileStmtEndLine(ds);
     smchecker.inDoWhileStmt=true;
     Expr *cond = ds->getCond();
@@ -109,6 +143,11 @@ public:
   }
   bool VisitStmt(Stmt *s)
   {
+    SourceLocation beginLoc = s->getBeginLoc();
+    if(!smchecker.checkeFileName(beginLoc))
+    {
+      return true;
+    }
     // Only care about For statements.
     smchecker.setFlags(s);
     if (isa<ForStmt>(s))
@@ -221,6 +260,11 @@ public:
   }
   bool VisitCallExpr(CallExpr *ce)
   {
+    SourceLocation beginLoc = ce->getBeginLoc();
+    if(!smchecker.checkeFileName(beginLoc))
+    {
+      return true;
+    }
     DeclRefExpr *dre = cast<DeclRefExpr>(ce->getCallee()->IgnoreImpCasts());
     string funcName = dre->getNameInfo().getAsString();
     int args = ce->getNumArgs();
@@ -262,13 +306,22 @@ public:
   }
   bool VisitCXXNullPtrLiteralExpr(CXXNullPtrLiteralExpr *cnpe)
   {
+    SourceLocation beginLoc = cnpe->getBeginLoc();
+    if(!smchecker.checkeFileName(beginLoc))
+    {
+      return true;
+    }
     //cout << "NULL\n";
     return true;
   }
   bool VisitBinaryOperator(BinaryOperator *stmt)
   {
-    //stmt->dump();
     SourceLocation beginLoc = stmt->getBeginLoc();
+    if(!smchecker.checkeFileName(beginLoc))
+    {
+      return true;
+    }
+    //stmt->dump();
     string beginLocString = beginLoc.printToString(*SM);
     char delims[] = ":";
     char *tmp = NULL;
@@ -339,6 +392,10 @@ public:
   bool VisitArraySubscriptExpr(ArraySubscriptExpr *ase)
   {
     SourceLocation beginLoc = ase->getBeginLoc();
+    if(!smchecker.checkeFileName(beginLoc))
+    {
+      return true;
+    }
     string beginLocString = beginLoc.printToString(*SM);
     //std::cout<<"inarr\n";
     Expr *lhs = ase->getBase()->IgnoreImpCasts();
@@ -364,7 +421,6 @@ public:
       int lbrack, rbrack;
       lbrack = qas.find_first_of('[');
       rbrack = qas.find_first_of(']');
-      //arrMaxSize=
       //std::cout<<qas.substr(lbrack+1,rbrack-lbrack-1)<<endl;
       arrMaxSize = std::stoi(qas.substr(lbrack + 1, rbrack - lbrack - 1));
       //std::cout<<"AMS"<<arrMaxSize<<endl;
@@ -405,6 +461,10 @@ public:
   bool VisitUnaryOperator(UnaryOperator *u)
   {
     SourceLocation beginLoc = u->getBeginLoc();
+    if(!smchecker.checkeFileName(beginLoc))
+    {
+      return true;
+    }
     string beginLocString = beginLoc.printToString(*SM);
     //std::cout<<"Unary OP"<<'\n';
     if (isa<DeclRefExpr>(u->getSubExpr()->IgnoreImpCasts()))
@@ -432,10 +492,14 @@ public:
   }
   bool VisitCXXDeleteExpr(CXXDeleteExpr *cde)
   {
+    SourceLocation beginLoc = cde->getBeginLoc();
+    if(!smchecker.checkeFileName(beginLoc))
+    {
+      return true;
+    }
     //std::cout<<"CXXDEL"<<'\n';
     // if (pc.getFuncName() != "main")
     //   return true;
-    SourceLocation beginLoc = cde->getBeginLoc();
     string beginLocString = beginLoc.printToString(*SM);
     DeclRefExpr *dre = cast<DeclRefExpr>(cde->getArgument()->IgnoreImpCasts());
     //dre->dumpColor();
@@ -465,6 +529,10 @@ public:
   bool VisitSwitchStmt(SwitchStmt* s)
   {
     SourceLocation beginLoc = s->getBeginLoc();
+    if(!smchecker.checkeFileName(beginLoc))
+    {
+      return true;
+    }
     string stringLoc = beginLoc.printToString(*SM);
     size_t pos_of_first = stringLoc.find_first_of(':');
     size_t pos_of_second = stringLoc.find_last_of(':');
@@ -488,12 +556,22 @@ public:
 
   bool VisitEnumDecl(EnumDecl *ed)
   {
+    SourceLocation beginLoc = ed->getBeginLoc();
+    if(!smchecker.checkeFileName(beginLoc))
+    {
+      return true;
+    }
     string enumName = ed->getNameAsString();
     EDs[enumName] = ed;
     return true;
   }
   bool VisitCXXRecordDecl(CXXRecordDecl *crd)
   {
+    SourceLocation beginLoc = crd->getBeginLoc();
+    if(!smchecker.checkeFileName(beginLoc))
+    {
+      return true;
+    }
     if (crd->isStruct())
     {
       for (auto const &field : crd->fields())
@@ -513,7 +591,11 @@ public:
 
   bool VisitMemberExpr(MemberExpr *me)
   {
-
+    SourceLocation beginLoc = me->getBeginLoc();
+    if(!smchecker.checkeFileName(beginLoc))
+    {
+      return true;
+    }
     string member_type = me->getType().getAsString();
     string member_name = me->getMemberNameInfo().getAsString();
     for (auto &field : field_use_list)
@@ -529,83 +611,65 @@ public:
   }
 
 private:
-  Rewriter &TheRewriter;
   PointerChecker pc;
   FuncChecker fc;
   SwitchChecker swchecker;
   SpaceChecker spchecker;
   SlowMemoryChecker smchecker;
 };
+}
 
-class MyASTConsumer : public ASTConsumer
-{
-public:
-  MyASTConsumer(Rewriter &R) : Visitor(R) {}
 
-  virtual bool HandleTopLevelDecl(DeclGroupRef DR)
-  {
-    for (DeclGroupRef::iterator b = DR.begin(), e = DR.end(); b != e; ++b)
-      // Traverse the declaration using my AST visitor.
-      Visitor.TraverseDecl(*b);
-    return true;
+
+std::string trim(std::string s) {
+  std::string result = s;
+  result.erase(0, result.find_first_not_of(" \t\r\n"));
+  result.erase(result.find_last_not_of(" \t\r\n") + 1);
+  return result;
+}
+
+std::vector<std::string> initialize(std::string astList) {
+  std::vector<std::string> astFiles;
+
+  std::ifstream fin(astList);
+  std::string line;
+  while (getline(fin, line)) {
+    line = trim(line);
+    if (line == "")
+      continue;
+    std::string fileName = line;
+    astFiles.push_back(fileName);
   }
+  fin.close();
 
-private:
-  MyASTVisitor Visitor;
-};
+  return astFiles;
+}
 
-
+std::unique_ptr<ASTUnit> loadFromASTFile(std::string AST) 
+{
+  FileSystemOptions FileSystemOpts;
+  IntrusiveRefCntPtr<DiagnosticsEngine> Diags =
+      CompilerInstance::createDiagnostics(new DiagnosticOptions());
+  std::shared_ptr<PCHContainerOperations> PCHContainerOps;
+  PCHContainerOps = std::make_shared<PCHContainerOperations>();
+  return std::unique_ptr<ASTUnit>(
+      ASTUnit::LoadFromASTFile(AST, PCHContainerOps->getRawReader(),
+                               ASTUnit::LoadEverything, Diags, FileSystemOpts));
+}
 
 int main(int argc, char *argv[])
 {
 
-  if (argc != 2)
+  std::vector<std::string> ASTs = initialize(argv[1]);
+  for (std::string AST : ASTs) 
   {
-    llvm::errs() << "Usage: myASTVisitor <filename>\n";
-    return 1;
+    std::unique_ptr<ASTUnit> AU = loadFromASTFile(AST);
+    //std::unique_ptr<ASTUnit> AU = loadFromASTFile("./sample.ast");
+    CTX = &(AU->getASTContext());
+    SM = &(CTX->getSourceManager());
+    MyASTVisitor visitor;
+    visitor.HandleTranslationUnit(AU->getASTContext());
   }
-
-  TheCompInst.createDiagnostics();
-
-  LangOptions &lo = TheCompInst.getLangOpts();
-  lo.CPlusPlus = 1;
-
-  auto TO = std::make_shared<TargetOptions>();
-  TO->Triple = llvm::sys::getDefaultTargetTriple();
-  TargetInfo *TI =
-      TargetInfo::CreateTargetInfo(TheCompInst.getDiagnostics(), TO);
-  TheCompInst.setTarget(TI);
-
-  TheCompInst.createFileManager();
-  FileManager &FileMgr = TheCompInst.getFileManager();
-  TheCompInst.createSourceManager(FileMgr);
-  SourceManager &SourceMgr = TheCompInst.getSourceManager();
-  SM = &SourceMgr;
-  TheCompInst.createPreprocessor(TU_Module);
-  TheCompInst.createASTContext();
-
-  Rewriter TheRewriter;
-
-  TheRewriter.setSourceMgr(SourceMgr, TheCompInst.getLangOpts());
-
-  // Set the main file
-  const FileEntry *FileIn = FileMgr.getFile(argv[1]);
-  SourceMgr.setMainFileID(
-      SourceMgr.createFileID(FileIn, SourceLocation(), SrcMgr::C_User));
-  TheCompInst.getDiagnosticClient().BeginSourceFile(
-      TheCompInst.getLangOpts(), &TheCompInst.getPreprocessor());
-
-  MyASTConsumer TheConsumer(TheRewriter);
-
-  ASTContext &context = TheCompInst.getASTContext();
-  CTX = &context;
-  // Parse the file to AST, registering our consumer as the AST consumer.
-  ParseAST(TheCompInst.getPreprocessor(), &TheConsumer,
-           TheCompInst.getASTContext());
-
-  // const RewriteBuffer *RewriteBuf =
-  //     TheRewriter.getRewriteBufferFor(SourceMgr.getMainFileID());
-  // llvm::outs() << std::string(RewriteBuf->begin(), RewriteBuf->end());
 
   SwitchChecker::floatAndStringCheck(argv[1]);
   SpaceChecker::unusedFieldCheck();

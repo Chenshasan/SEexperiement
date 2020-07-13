@@ -1,3 +1,8 @@
+/**
+ * @file readConfig.h
+ * @author 叶宙果
+ * @version v2
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,10 +12,17 @@
 
 #define KEYVALLEN 100
 
+/**
+ * @class ReadConfig
+ * 读取配置文件的工具类
+ */
 class ReadConfig
 {
 public:
-    /*   删除左边的空格   */
+
+/**
+ * 删除左边的空格
+ */
     char *l_trim(char *szOutput, const char *szInput)
     {
         assert(szInput != NULL);
@@ -23,7 +35,9 @@ public:
         return strcpy(szOutput, szInput);
     };
 
-    /*   删除右边的空格   */
+/**
+ * 删除右边的空格
+ */
     char *r_trim(char *szOutput, const char *szInput)
     {
         char *p = NULL;
@@ -39,7 +53,9 @@ public:
         return szOutput;
     };
 
-    /*   删除两边的空格   */
+/**
+ * 删除等号两边的空格
+ */
     char *a_trim(char *szOutput, const char *szInput)
     {
         char *p = NULL;
@@ -54,6 +70,13 @@ public:
         return szOutput;
     };
 
+/**
+ * 读取配置文件中的信息
+ * @param profile 配置文件路径
+ * @param AppName 模块名称
+ * @param KeyName 变量的名称
+ * @param KeyVal 变量的值
+ */
     int GetProfileString(const char *profile, const char *AppName, const char *KeyName, char *KeyVal)
     {
         char appname[32], keyname[32];

@@ -1,10 +1,21 @@
+/**
+ * @file VariableChecker.cpp
+ * @author 叶宙果
+ * @version v2
+ */
 #include "VariableChecker.h"
 
+/* 
+ * 构造函数
+ */
 VariableChecker::VariableChecker()
 {
     ;
 }
 
+/* 
+ * 打印目前函数的CFG
+ */
 void VariableChecker::PrintCFG(FunctionDecl *func)
 {
     cout << "Inside " << " " << func->getNameInfo().getName().getAsString() << "\n";
@@ -27,7 +38,9 @@ void VariableChecker::PrintCFG(FunctionDecl *func)
     cfg->dump(TheCompInst.getLangOpts(),true);
 }
 
-
+/* 
+ * 打印目前函数的活跃变量信息
+ */
 void VariableChecker::PrintLiveVariables(FunctionDecl *func)
 {
     cout << "Inside " << " " << func->getNameInfo().getName().getAsString() << "\n";

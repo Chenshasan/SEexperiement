@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#define LARGE_MEMORY_LEN2 2048
 
 int inc(int a)
 {
@@ -16,6 +17,15 @@ int my_memcmp(void* a, void* b, unsigned int len){
         if(b>a) return -1;
     }
     return 0;
+}
+
+void seexp5(){
+    char dest_seexp[LARGE_MEMORY_LEN2];
+    int i = 0;
+    // seexp, warning at follow loop:
+    do {
+        dest_seexp[i] = 'n';
+    } while (++i < LARGE_MEMORY_LEN2);
 }
 
 int main()
