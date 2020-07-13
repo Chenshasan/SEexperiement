@@ -766,7 +766,8 @@ SlowMemoryChecker::SlowMemoryChecker()
     this->numOfForLoop=0;
     this->numOfDoWhileLoop=0;
     char minloop[16];
-    const char *profile = "./smChecker.conf";
+    //TODO
+    const char *profile = "./smChecker.conf";   //path of .conf file.  
     const char *appname = "smchecker";
     const char *varname = "minloop";
     if(this->rc.GetProfileString(profile,appname,varname,minloop)==0)
