@@ -32,7 +32,7 @@ import java.util.*;
 public class UploadController {
 
     //private final static String CHUNK_FOLDER = "/Users/yangwei/resource/data/chunk";
-    private final static String SINGLE_FOLDER = "D:\\googleDownload";
+    private final static String SINGLE_FOLDER = "E:\\work\\resource";
 
     @Autowired
     private IUploadService uploadService;

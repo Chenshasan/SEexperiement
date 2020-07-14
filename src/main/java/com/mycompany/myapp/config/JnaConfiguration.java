@@ -31,31 +31,6 @@ import com.sun.jna.*;
 import com.sun.jna.Structure.ByReference;
 
 
-/** Provides generation of invocation plumbing for a defined native
- * library interface.  Also provides various utilities for native operations.
- * <p>
- * {@link #getTypeMapper} and {@link #getStructureAlignment} are provided
- * to avoid having to explicitly pass these parameters to {@link Structure}s,
- * which would require every {@link Structure} which requires custom mapping
- * or alignment to define a constructor and pass parameters to the superclass.
- * To avoid lots of boilerplate, the base {@link Structure} constructor
- * figures out these properties based on its enclosing interface.<p>
- * <a name=library_loading></a>
- * <h2>Library Loading</h2>
- * When JNA classes are loaded, the native shared library (jnidispatch) is
- * loaded as well.  An attempt is made to load it from the system library path
- * using {@link System#loadLibrary}.  If not found, the appropriate library
- * will be extracted from the class path into a temporary directory and
- * loaded from there.  If your system has additional security constraints
- * regarding execution or load of files (SELinux, for example), you should
- * probably install the native library in an accessible location and configure
- * your system accordingly, rather than relying on JNA to extract the library
- * from its own jar file.
- * <p>
- * @see Library
- * @author Todd Fast, todd.fast@sun.com
- * @author twall@users.sf.net
- */
 public final class JnaConfiguration {
 
     private static Map typeMappers = new WeakHashMap();
