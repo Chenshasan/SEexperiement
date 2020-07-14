@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#define SIZE 1024*1024
 
 int inc(int a)
 {

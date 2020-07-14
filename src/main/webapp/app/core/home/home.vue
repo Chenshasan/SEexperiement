@@ -22,11 +22,11 @@
         }
 
         .masthead h1 {
-            font-size: 110px;
-            font-weight:bold;
-            margin-bottom: 30px;
-            color:#ffffff;
-        }
+                     font-size: 110px;
+                     font-weight:bold;
+                     margin-bottom: 30px;
+                     color:#ffffff;
+                 }
 
         .btn{
             color: #ffffff;

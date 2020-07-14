@@ -1,5 +1,5 @@
 #include "pointerChecker.h"
-#include "../common/errNo.h"
+#include "../Common/errNo.h"
 
 int PointerChecker::nullDerefCheck(const Pointer &p2deref, const std::string &locString)
 {
@@ -18,6 +18,7 @@ int PointerChecker::nullDerefCheck(const Pointer &p2deref, const std::string &lo
         std::string msg = locString + ':';
         msg = msg + static_cast<char>('0' + NullDeref) + ':' + p2deref.getName() + '\n';
         pprint(msg);
+        std::cout << msg;
         return -1;
 #endif
     }
@@ -40,6 +41,7 @@ int PointerChecker::freeCheck(const Pointer &p2free, const std::string &locStrin
 #else
         std::string msg = locString + ':' + static_cast<char>('0' + DoubleFree) + ':' + p2free.getName() + '\n';
         pprint(msg);
+        std::cout << msg;
 #endif
     }
     else
@@ -54,6 +56,7 @@ int PointerChecker::freeCheck(const Pointer &p2free, const std::string &locStrin
 #else
         std::string msg = locString + ':' + static_cast<char>('0' + DoubleFree) + ':' + p2free.getName() + '\n';
         pprint(msg);
+        std::cout << msg;
 #endif
     }
     return -1;
@@ -120,14 +123,14 @@ void PointerChecker::assignPointer(Pointer lhs, const Pointer &rhs)
         exit(-1);
     }
 }
-void PointerChecker::freePointer(const Pointer &p2free, bool &success,const std::string& locString)
+void PointerChecker::freePointer(const Pointer &p2free, bool &success, const std::string &locString)
 {
     success = false;
     if (UFMapByName.count(currentFuncName) > 0)
     {
         PIMap *pMap = pIndexMaps[currentFuncName];
         UnionFind *UF = UFMapByName.at(currentFuncName);
-        if (freeCheck(p2free,locString) < 0)
+        if (freeCheck(p2free, locString) < 0)
             return;
         else
             for (int i = 0; i < UF_CAPACITY; ++i)
@@ -158,3 +161,4 @@ void PointerChecker::stepInFunc(const std::string &funcName)
     IM->clear();
     pIndexMaps[currentFuncName] = IM;
 }
+

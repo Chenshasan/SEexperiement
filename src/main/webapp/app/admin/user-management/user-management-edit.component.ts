@@ -72,6 +72,7 @@ export default class JhiUserManagementEdit extends Vue {
       .get(userId)
       .then(res => {
         this.userAccount = res.data;
+        this.alertService().showAlert(this.getMessageFromHeader(res), 'info');
       });
   }
 
