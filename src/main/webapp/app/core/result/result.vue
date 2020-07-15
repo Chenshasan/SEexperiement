@@ -72,6 +72,7 @@
                     }else if(Boolean(this.warn[3].toString()==="类型不匹配")){
                         console.log('aaa')
                         $("li:nth-child("+this.index+")").css({"background-color":"#ddf3f5"});
+                        $("li:nth-child("+this.index+")").append("&nbsp;&nbsp;&nbsp;&nbsp;报错信息：不匹配的类型为"+this.warn[4]);
                     }else if(Boolean(this.warn[3].toString()==="大型变量")){
                         console.log('aaa')
                         $("li:nth-child("+this.index+")").css({"background-color":"#fce8d5"});

@@ -94,7 +94,7 @@ new Vue({
     metricsService: () => new MetricsService(),
     alertService: () => alertService,
     translationService: () => translationService,
-    // jhipster-needle-add-entity-service-to-main - JHipster will import entities services here
+
     accountService: () => accountService
   },
   i18n,
