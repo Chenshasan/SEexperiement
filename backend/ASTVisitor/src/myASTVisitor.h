@@ -13,7 +13,7 @@ using namespace clang;
 
 extern SourceManager *SM;
 extern ASTContext *CTX;
-extern CompilerInstance TheCompInst;
+extern CompilerInstance TheCompInst;d
 extern unordered_map<string, EnumDecl*> EDs;
 
 extern vector<SwitchLocation> switch_loc_list;

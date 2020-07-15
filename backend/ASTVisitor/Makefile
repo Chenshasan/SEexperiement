@@ -1,5 +1,5 @@
-LLVM_SRC_PATH := /home/calvinliu/Desktop/llvm/include
-LLVM_BUILD_PATH := /home/calvinliu/Desktop/llvm
+LLVM_SRC_PATH := /home/yzg/llvm/include
+LLVM_BUILD_PATH := /home/yzg/llvm
 LLVM_BIN_PATH 	:= $(LLVM_BUILD_PATH)/bin
 
 $(info -----------------------------------------------)
@@ -8,7 +8,7 @@ $(info Using LLVM_BUILD_PATH = $(LLVM_BUILD_PATH))
 $(info Using LLVM_BIN_PATH = $(LLVM_BIN_PATH))
 $(info -----------------------------------------------)
 
-CXX := /home/calvinliu/Desktop/llvm/bin/clang++
+CXX := /home/yzg/llvm/bin/clang++
 CXXFLAGS := -fno-rtti -O0 -g
 PLUGIN_CXXFLAGS := -fpic
 
@@ -48,7 +48,7 @@ BUILDDIR := build
 all:$(BUILDDIR)/myASTVisitor
 	
 
-$(BUILDDIR)/myASTVisitor: $(DIR_SRCS)/myASTVisitor.cpp $(DIR_SRCS)/PointerChecker/pointerChecker.cpp $(DIR_SRCS)/SwitchChecker/switchChecker.cpp $(DIR_SRCS)/SpaceChecker/spaceChecker.cpp $(DIR_SRCS)/SwitchChecker/switchChecker.cpp $(DIR_SRCS)/SpaceChecker/spaceChecker.cpp $(DIR_SRCS)/SwitchChecker/switchChecker.cpp $(DIR_SRCS)/SpaceChecker/spaceChecker.cpp $(DIR_SRCS)/FunctionChecker/functionChecker.cpp 
+$(BUILDDIR)/myASTVisitor: $(DIR_SRCS)/myASTVisitor.cpp $(DIR_SRCS)/PointerChecker/pointerChecker.cpp $(DIR_SRCS)/SwitchChecker/switchChecker.cpp $(DIR_SRCS)/SpaceChecker/spaceChecker.cpp $(DIR_SRCS)/SwitchChecker/switchChecker.cpp $(DIR_SRCS)/SpaceChecker/spaceChecker.cpp $(DIR_SRCS)/SwitchChecker/switchChecker.cpp $(DIR_SRCS)/SpaceChecker/spaceChecker.cpp $(DIR_SRCS)/FunctionChecker/functionChecker.cpp $(DIR_SRCS)/SlowMemoryChecker/slowMemoryChecker.cpp 
 	$(CXX) $(CXXFLAGS) $(LLVM_CXXFLAGS) $(CLANG_INCLUDES) $^ \
 		$(CLANG_LIBS) $(LLVM_LDFLAGS) -o $@
 

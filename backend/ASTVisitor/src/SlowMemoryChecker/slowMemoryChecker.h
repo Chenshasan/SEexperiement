@@ -21,6 +21,7 @@
 #include "slowMemoryChecker.h"
 #include "VariableChecker.h"
 
+#include "readConfig.h"
 
 using namespace clang;
 using namespace std;
@@ -143,5 +144,6 @@ public:
 
     Expr *DoWhileCond;
 
-};
+    ReadConfig rc;
 
+};
