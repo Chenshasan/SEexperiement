@@ -87,8 +87,8 @@ public class UploadController {
         }
     String f=String.valueOf(path);
     String out="yyy";
-    CmdServiceImpl.putFile(CmdServiceImpl.login("114.212.84.169","hsl","123qwe"),f,"/home/hsl/ASTVisitor/build");
-    out=CmdServiceImpl.execute(CmdServiceImpl.login("114.212.84.169","hsl","123qwe"),"./ASTVisitor/build/myASTVisitor ./ASTVisitor/build/"+name);
+    CmdServiceImpl.putFile(CmdServiceImpl.login("139.224.134.61","root","123561795Ljj"),f,"/root/ASTVisitor/build");
+    out=CmdServiceImpl.execute(CmdServiceImpl.login("139.224.134.61","root","123561795Ljj"),"./ASTVisitor/build/myASTVisitor ./ASTVisitor/build/"+name);
     System.out.print(out);
 
     RecordVO recordVO=new RecordVO();
